@@ -6,12 +6,12 @@ This project is a web application that allows users to upload or link music trac
 ## Project Structure
 
 ```
-your-project/
+vibe-sync/
 ├── backend/                # FastAPI backend
 │   ├── app/
 │   │   ├── main.py         # FastAPI main application
-│   │   ├── models.py       # (Future) Database models and data structures
-│   │   ├── services.py     # (Future) Business logic for music classification
+│   │   ├── models.py       # Database models and data structures
+│   │   ├── services.py     # Business logic for music classification
 │   └── requirements.txt    # Python dependencies for FastAPI
 ├── frontend/               # Next.js frontend
 │   └── (Next.js project files)
@@ -22,7 +22,7 @@ your-project/
 
 - **Python 3.11** (Backend)
 - **Node.js 18.x** or higher (Frontend)
-- **WSL2** (Windows Subsystem for Linux) is recommended if you are on Windows for a seamless development experience.
+- **WSL2** (Windows Subsystem for Linux) is recommended if you are on Windows.
 
 ---
 

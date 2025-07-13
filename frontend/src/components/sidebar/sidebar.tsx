@@ -1,6 +1,6 @@
 "use client"
 
-import { Home, Music, Heart, Clock, Sparkles, User, List, Menu, X } from "lucide-react"
+import { Home, Music, Heart, Clock, Sparkles, User, List, X } from "lucide-react"
 import { SidebarItem } from "./sidebar-item"
 import { PlaylistSection } from "./playlist-section"
 import { ProfilePopup } from "./profile-popup"
@@ -9,12 +9,12 @@ import { Button } from "@/components/ui/button"
 
 interface SidebarProps {
   currentView: string
-  onViewChange: (view: string) => void
+  onViewChangeAction: (view: string) => void
   isExpanded: boolean
-  onToggleExpanded: (expanded: boolean) => void
+  onToggleExpandedAction: (expanded: boolean) => void
 }
 
-export function Sidebar({ currentView, onViewChange, isExpanded, onToggleExpanded }: SidebarProps) {
+export function Sidebar({ currentView, onViewChangeAction, isExpanded, onToggleExpandedAction }: SidebarProps) {
   const [showPlaylists, setShowPlaylists] = useState(false)
   const [showProfile, setShowProfile] = useState(false)
 
@@ -28,7 +28,7 @@ export function Sidebar({ currentView, onViewChange, isExpanded, onToggleExpande
 
   const handlePlaylistClick = () => {
     if (!isExpanded) {
-      onToggleExpanded(true)
+      onToggleExpandedAction(true)
       setShowPlaylists(true)
     } else {
       setShowPlaylists(!showPlaylists)
@@ -48,14 +48,16 @@ export function Sidebar({ currentView, onViewChange, isExpanded, onToggleExpande
           {isExpanded && <span className="font-bold text-xl">VibeSync</span>}
         </div>
 
-        <Button
-          variant="ghost"
-          size="icon"
-          onClick={() => onToggleExpanded(!isExpanded)}
-          className="text-white/60 hover:text-white hover:bg-white/10 w-8 h-8"
-        >
-          {isExpanded ? <X className="w-4 h-4" /> : <Menu className="w-4 h-4" />}
-        </Button>
+        {isExpanded && (
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={() => onToggleExpandedAction(false)}
+            className="text-white/60 hover:text-white hover:bg-white/10 w-8 h-8"
+          >
+            <X className="w-4 h-4" />
+          </Button>
+        )}
       </div>
 
       {/* Main Navigation */}
@@ -66,7 +68,7 @@ export function Sidebar({ currentView, onViewChange, isExpanded, onToggleExpande
             icon={item.icon}
             label={item.label}
             isActive={currentView === item.id}
-            onClick={() => onViewChange(item.id)}
+            onClick={() => onViewChangeAction(item.id)}
             showLabel={isExpanded}
             isAI={item.id === "ai-classification"}
           />
@@ -83,15 +85,23 @@ export function Sidebar({ currentView, onViewChange, isExpanded, onToggleExpande
         />
 
         {/* Playlists Section */}
-        {isExpanded && showPlaylists && <PlaylistSection onPlaylistSelect={onViewChange} />}
+        {isExpanded && showPlaylists && <PlaylistSection onPlaylistSelectAction={onViewChangeAction} />}
       </div>
 
       {/* User Profile */}
-      <div className="p-2 border-t border-white/10 relative">
-        <SidebarItem icon={User} label="Profile" onClick={() => setShowProfile(!showProfile)} showLabel={isExpanded} />
+      {/* 
+        When the sidebar is expanded, the profile popup appears over the main content area.
+        This can cause conflicts with the main content component and the music player below.
+        To avoid this, we can conditionally render the profile popup only when the sidebar is expanded.
+        TODO: Consider using a portal or modal for the profile popup to avoid layout issues.
+      */}
+      {isExpanded && (
+        <div className="p-2 border-t border-white/10 relative">
+          <SidebarItem icon={User} label="Profile" onClick={() => setShowProfile(!showProfile)} showLabel={isExpanded} />
+          {showProfile && <ProfilePopup isExpanded={isExpanded} onCloseAction={() => setShowProfile(false)} />}
+        </div>
+      )}
 
-        {showProfile && <ProfilePopup isExpanded={isExpanded} onClose={() => setShowProfile(false)} />}
-      </div>
     </div>
   )
 }

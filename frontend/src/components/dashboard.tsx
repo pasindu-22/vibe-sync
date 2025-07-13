@@ -5,18 +5,19 @@ import { Sidebar } from "@/components/sidebar/sidebar"
 import { MainContent } from "@/components/main-content"
 import { MusicPlayer } from "@/components/music-player/music-player"
 import { LandingPage } from "@/components/landing/landing-page"
+import { Track } from "@/types"
 
 export function Dashboard() {
-  const [isAuthenticated, setIsAuthenticated] = useState(false)
+  const [isAuthenticated, setIsAuthenticated] = useState(true)
   const [currentView, setCurrentView] = useState("home")
   const [isSidebarExpanded, setIsSidebarExpanded] = useState(false)
-  const [currentTrack, setCurrentTrack] = useState({
+  const [currentTrack, setCurrentTrack] = useState<Track>({
     id: "1",
     title: "Bohemian Rhapsody",
     artist: "Queen",
     album: "A Night at the Opera",
-    duration: "5:55",
-    cover: "/placeholder.svg?height=300&width=300",
+    duration: 355, // 5 minutes 55 seconds in seconds
+    cover: "/Music-Album-Cover.jpg",
     genre: "Rock",
     mood: "Epic",
     isPlaying: false,
@@ -30,14 +31,14 @@ export function Dashboard() {
     <div className="flex h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 text-white overflow-hidden">
       <Sidebar
         currentView={currentView}
-        onViewChange={setCurrentView}
+        onViewChangeAction={setCurrentView}
         isExpanded={isSidebarExpanded}
-        onToggleExpanded={setIsSidebarExpanded}
+        onToggleExpandedAction={setIsSidebarExpanded}
       />
 
       <div className="flex-1 flex flex-col min-w-0">
-        <MainContent currentView={currentView} currentTrack={currentTrack} onTrackSelect={setCurrentTrack} />
-        <MusicPlayer track={currentTrack} onTrackChange={setCurrentTrack} />
+        <MainContent currentView={currentView} currentTrack={currentTrack} onTrackSelectAction={setCurrentTrack} />
+        <MusicPlayer track={currentTrack} onTrackChangeAction={setCurrentTrack} />
       </div>
     </div>
   )

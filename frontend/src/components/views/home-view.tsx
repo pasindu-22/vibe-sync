@@ -2,10 +2,11 @@
 
 import { TrackCard } from "../music/track-card"
 import { PlaylistCard } from "../music/playlist-card"
+import { Track } from "@/types"
 
 interface HomeViewProps {
-  currentTrack: any
-  onTrackSelect: (track: any) => void
+  currentTrack: Track
+  onTrackSelectAction: (track: Track) => void
 }
 
 const mockRecentTracks = [
@@ -14,40 +15,44 @@ const mockRecentTracks = [
     title: "Bohemian Rhapsody",
     artist: "Queen",
     album: "A Night at the Opera",
-    duration: "5:55",
+    duration: 355,
     cover: "/placeholder.svg?height=300&width=300",
     genre: "Rock",
     mood: "Epic",
+    isPlaying: false,
   },
   {
     id: "2",
     title: "Billie Jean",
     artist: "Michael Jackson",
     album: "Thriller",
-    duration: "4:54",
+    duration: 294,
     cover: "/placeholder.svg?height=300&width=300",
     genre: "Pop",
     mood: "Energetic",
+    isPlaying: false,
   },
   {
     id: "3",
     title: "Hotel California",
     artist: "Eagles",
     album: "Hotel California",
-    duration: "6:30",
+    duration: 390,
     cover: "/placeholder.svg?height=300&width=300",
     genre: "Rock",
     mood: "Mysterious",
+    isPlaying: false,
   },
   {
     id: "4",
     title: "Shape of You",
     artist: "Ed Sheeran",
     album: "÷ (Divide)",
-    duration: "3:53",
+    duration: 233,
     cover: "/placeholder.svg?height=300&width=300",
     genre: "Pop",
     mood: "Happy",
+    isPlaying: false,
   },
 ]
 
@@ -75,7 +80,7 @@ const mockPlaylists = [
   },
 ]
 
-export function HomeView({ currentTrack, onTrackSelect }: HomeViewProps) {
+export function HomeView({ currentTrack, onTrackSelectAction }: HomeViewProps) {
   return (
     <div className="p-6 space-y-8">
       {/* Welcome Section */}
@@ -95,7 +100,7 @@ export function HomeView({ currentTrack, onTrackSelect }: HomeViewProps) {
               key={track.id}
               track={track}
               isPlaying={currentTrack?.id === track.id}
-              onPlay={() => onTrackSelect(track)}
+              onPlayAction={() => onTrackSelectAction(track)}
             />
           ))}
         </div>

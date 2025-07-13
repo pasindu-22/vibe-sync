@@ -1,26 +1,18 @@
 "use client"
 
+import Image from "next/image"
 import { useState } from "react"
 import { Play, Pause, SkipBack, SkipForward, Volume2, Repeat, Shuffle, Heart } from "lucide-react"
 import { Slider } from "@/components/ui/slider"
 import { cn } from "@/lib/utils"
+import { Track } from "@/types"
 
 interface MusicPlayerProps {
-  track: {
-    id: string
-    title: string
-    artist: string
-    album: string
-    duration: string
-    cover: string
-    genre: string
-    mood: string
-    isPlaying?: boolean
-  }
-  onTrackChange: (track: any) => void
+  track: Track
+  onTrackChangeAction: (track: Track) => void
 }
 
-export function MusicPlayer({ track, onTrackChange }: MusicPlayerProps) {
+export function MusicPlayer({ track, onTrackChangeAction }: MusicPlayerProps) {
   const [isPlaying, setIsPlaying] = useState(false)
   const [currentTime, setCurrentTime] = useState(0)
   const [volume, setVolume] = useState(75)
@@ -30,7 +22,7 @@ export function MusicPlayer({ track, onTrackChange }: MusicPlayerProps) {
 
   const togglePlay = () => {
     setIsPlaying(!isPlaying)
-    onTrackChange({ ...track, isPlaying: !isPlaying })
+    onTrackChangeAction({ ...track, isPlaying: !isPlaying })
   }
 
   const formatTime = (seconds: number) => {
@@ -43,7 +35,13 @@ export function MusicPlayer({ track, onTrackChange }: MusicPlayerProps) {
     <div className="h-24 bg-black/40 backdrop-blur-xl border-t border-white/10 px-4 flex items-center justify-between">
       {/* Track Info */}
       <div className="flex items-center gap-4 min-w-0 flex-1">
-        <img src={track.cover || "/placeholder.svg"} alt={track.title} className="w-14 h-14 rounded-lg object-cover" />
+        <Image
+          src={track.cover || "/placeholder.svg"}
+          alt={track.title}
+          width={56}
+          height={56}
+          className="w-14 h-14 rounded-lg object-cover"
+        />
         <div className="min-w-0">
           <h4 className="font-medium text-white truncate">{track.title}</h4>
           <p className="text-sm text-white/60 truncate">{track.artist}</p>

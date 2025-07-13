@@ -3,7 +3,7 @@ export interface Track {
   title: string;
   artist: string;
   album: string;
-  duration?: number;
+  duration: number;
   cover: string;
   genre: string;
   mood: string;
@@ -16,9 +16,9 @@ export interface Playlist {
   name: string;
   description?: string;
   tracks: Track[];
-  coverImage?: string;
-  createdAt: Date;
-  updatedAt: Date;
+  cover: string;
+  createdAt?: Date;
+  updatedAt?: Date;
 }
 
 export interface User {

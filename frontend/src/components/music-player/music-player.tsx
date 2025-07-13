@@ -15,7 +15,7 @@ interface MusicPlayerProps {
 export function MusicPlayer({ track, onTrackChangeAction }: MusicPlayerProps) {
   const [isPlaying, setIsPlaying] = useState(false)
   const [currentTime, setCurrentTime] = useState(0)
-  const [volume, setVolume] = useState(75)
+  const [volume, setVolume] = useState(100)
   const [isLiked, setIsLiked] = useState(false)
   const [isRepeat, setIsRepeat] = useState(false)
   const [isShuffle, setIsShuffle] = useState(false)
@@ -110,7 +110,7 @@ export function MusicPlayer({ track, onTrackChangeAction }: MusicPlayerProps) {
             step={1}
             className="flex-1"
           />
-          <span className="text-xs text-white/60 w-10">{track.duration}</span>
+          <span className="text-xs text-white/60 w-10">{formatTime(track.duration)}</span>
         </div>
       </div>
 

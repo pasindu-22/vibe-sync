@@ -17,7 +17,7 @@ export function Dashboard() {
     artist: "Queen",
     album: "A Night at the Opera",
     duration: 355, // 5 minutes 55 seconds in seconds
-    cover: "/Music-Album-Cover.jpg",
+    cover: "/TODO-Delete/Music-Cover-1.jpg",
     genre: "Rock",
     mood: "Epic",
     isPlaying: false,
@@ -37,7 +37,7 @@ export function Dashboard() {
       />
 
       <div className="flex-1 flex flex-col min-w-0">
-        <MainContent currentView={currentView} currentTrack={currentTrack} onTrackSelectAction={setCurrentTrack} />
+        <MainContent currentView={currentView} currentTrack={currentTrack} onViewChangeAction={setCurrentView} onTrackSelectAction={setCurrentTrack} />
         <MusicPlayer track={currentTrack} onTrackChangeAction={setCurrentTrack} />
       </div>
     </div>

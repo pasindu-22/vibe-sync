@@ -6,35 +6,38 @@ import { LikedSongsView } from "./views/liked-songs-view"
 import { RecentlyPlayedView } from "./views/recently-played-view"
 import { PlaylistView } from "./views/playlist-view"
 import { AIClassificationView } from "./views/ai-classification-view"
+import { Track } from "@/types"
 
 interface MainContentProps {
   currentView: string
-  currentTrack: any
-  onTrackSelect: (track: any) => void
+  currentTrack: Track
+  onViewChangeAction: (view: string) => void
+  onTrackSelectAction: (track: Track) => void
 }
 
-export function MainContent({ currentView, currentTrack, onTrackSelect }: MainContentProps) {
+export function MainContent({ currentView, currentTrack, onViewChangeAction, onTrackSelectAction }: MainContentProps) {
+
   const renderView = () => {
     switch (currentView) {
       case "home":
-        return <HomeView currentTrack={currentTrack} onTrackSelect={onTrackSelect} />
+        return <HomeView currentTrack={currentTrack} onViewChangeAction={onViewChangeAction} onTrackSelectAction={onTrackSelectAction} />
       case "library":
-        return <LibraryView onTrackSelect={onTrackSelect} />
+        return <LibraryView onTrackSelectAction={onTrackSelectAction} />
       case "liked":
-        return <LikedSongsView onTrackSelect={onTrackSelect} />
+        return <LikedSongsView onTrackSelectAction={onTrackSelectAction} />
       case "recent":
-        return <RecentlyPlayedView onTrackSelect={onTrackSelect} />
+        return <RecentlyPlayedView onTrackSelectAction={onTrackSelectAction} />
       case "ai-classification":
-        return <AIClassificationView onTrackSelect={onTrackSelect} />
+        return <AIClassificationView onTrackSelectAction={onTrackSelectAction} />
       case "playlist-1":
       case "playlist-2":
       case "playlist-3":
       case "playlist-4":
-        return <PlaylistView playlistId={currentView} onTrackSelect={onTrackSelect} />
+        return <PlaylistView playlistId={currentView} onTrackSelectAction={onTrackSelectAction} />
       default:
-        return <HomeView currentTrack={currentTrack} onTrackSelect={onTrackSelect} />
+        return <HomeView currentTrack={currentTrack} onTrackSelectAction={onTrackSelectAction} />
     }
   }
 
-  return <div className="flex-1 overflow-y-auto bg-gradient-to-b from-transparent to-black/20">{renderView()}</div>
+  return <div className="flex-1 overflow-y-auto bg-gradient-to-b from-transparent to-black/20 scrollbar-hidden">{renderView()}</div>
 }

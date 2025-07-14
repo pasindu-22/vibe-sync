@@ -1,0 +1,188 @@
+import { Track } from '../../types';
+
+export const mockTracks: Track[] = [
+  {
+    id: '1',
+    title: 'Blinding Lights',
+    artist: 'The Weeknd',
+    album: 'After Hours',
+    duration: 200,
+    cover: '/TODO-Delete/Music-Cover-1.jpg',
+    genre: 'Pop',
+    mood: 'Energetic',
+    isPlaying: false,
+  },
+  {
+    id: '2',
+    title: 'Shape of You',
+    artist: 'Ed Sheeran',
+    album: '÷ (Divide)',
+    duration: 233,
+    cover: '/TODO-Delete/Music-Cover-2.jpg',
+    genre: 'Pop',
+    mood: 'Happy',
+    isPlaying: false,
+  },
+  {
+    id: '3',
+    title: 'Someone Like You',
+    artist: 'Adele',
+    album: '21',
+    duration: 285,
+    cover: '/TODO-Delete/Music-Cover-3.jpg',
+    genre: 'Soul',
+    mood: 'Melancholic',
+    isPlaying: false,
+  },
+  {
+    id: '4',
+    title: 'Bohemian Rhapsody',
+    artist: 'Queen',
+    album: 'A Night at the Opera',
+    duration: 355,
+    cover: '/TODO-Delete/Music-Cover-4.jpg',
+    genre: 'Rock',
+    mood: 'Epic',
+    isPlaying: false,
+  },
+  {
+    id: '5',
+    title: 'Billie Jean',
+    artist: 'Michael Jackson',
+    album: 'Thriller',
+    duration: 294,
+    cover: '/TODO-Delete/Music-Cover-5.jpg',
+    genre: 'Pop',
+    mood: 'Groovy',
+    isPlaying: false,
+  },
+  {
+    id: '6',
+    title: 'Hotel California',
+    artist: 'Eagles',
+    album: 'Hotel California',
+    duration: 391,
+    cover: '/TODO-Delete/Music-Cover-6.jpg',
+    genre: 'Rock',
+    mood: 'Chill',
+    isPlaying: false,
+  },
+  {
+    id: '7',
+    title: 'Watermelon Sugar',
+    artist: 'Harry Styles',
+    album: 'Fine Line',
+    duration: 174,
+    cover: '/TODO-Delete/Music-Cover-7.jpg',
+    genre: 'Pop',
+    mood: 'Happy',
+    isPlaying: false,
+  },
+  {
+    id: '8',
+    title: 'Bad Guy',
+    artist: 'Billie Eilish',
+    album: 'When We All Fall Asleep, Where Do We Go?',
+    duration: 194,
+    cover: '/TODO-Delete/Music-Cover-1.jpg',
+    genre: 'Alternative',
+    mood: 'Dark',
+    isPlaying: false,
+  },
+  {
+    id: '9',
+    title: 'Thunderstruck',
+    artist: 'AC/DC',
+    album: 'The Razors Edge',
+    duration: 292,
+    cover: '/TODO-Delete/Music-Cover-2.jpg',
+    genre: 'Rock',
+    mood: 'Energetic',
+    isPlaying: false,
+  },
+  {
+    id: '10',
+    title: 'Perfect',
+    artist: 'Ed Sheeran',
+    album: '÷ (Divide)',
+    duration: 263,
+    cover: '/TODO-Delete/Music-Cover-3.jpg',
+    genre: 'Pop',
+    mood: 'Romantic',
+    isPlaying: false,
+  },
+  {
+    id: '11',
+    title: 'Rolling in the Deep',
+    artist: 'Adele',
+    album: '21',
+    duration: 228,
+    cover: '/TODO-Delete/Music-Cover-4.jpg',
+    genre: 'Soul',
+    mood: 'Powerful',
+    isPlaying: false,
+  },
+  {
+    id: '12',
+    title: 'Smells Like Teen Spirit',
+    artist: 'Nirvana',
+    album: 'Nevermind',
+    duration: 301,
+    cover: '/TODO-Delete/Music-Cover-5.jpg',
+    genre: 'Grunge',
+    mood: 'Rebellious',
+    isPlaying: false,
+  },
+  {
+    id: '13',
+    title: 'Imagine',
+    artist: 'John Lennon',
+    album: 'Imagine',
+    duration: 183,
+    cover: '/TODO-Delete/Music-Cover-6.jpg',
+    genre: 'Rock',
+    mood: 'Peaceful',
+    isPlaying: false,
+  },
+  {
+    id: '14',
+    title: 'Sweet Child O\' Mine',
+    artist: 'Guns N\' Roses',
+    album: 'Appetite for Destruction',
+    duration: 356,
+    cover: '/TODO-Delete/Music-Cover-7.jpg',
+    genre: 'Rock',
+    mood: 'Epic',
+    isPlaying: false,
+  },
+  {
+    id: '15',
+    title: 'Yesterday',
+    artist: 'The Beatles',
+    album: 'Help!',
+    duration: 125,
+    cover: '/TODO-Delete/Music-Cover-1.jpg',
+    genre: 'Rock',
+    mood: 'Nostalgic',
+    isPlaying: false,
+  },
+];
+
+export const recentlyPlayedTracks: Track[] = mockTracks.slice(0, 12);
+
+export const likedTracks: Track[] = [
+  mockTracks[0], // Blinding Lights
+  mockTracks[2], // Someone Like You
+  mockTracks[4], // Billie Jean
+  mockTracks[6], // Watermelon Sugar
+  mockTracks[9], // Perfect
+  mockTracks[12], // Imagine
+];
+
+export const trendingTracks: Track[] = [
+  mockTracks[0], // Blinding Lights
+  mockTracks[1], // Shape of You
+  mockTracks[7], // Bad Guy
+  mockTracks[6], // Watermelon Sugar
+  mockTracks[8], // Thunderstruck
+];

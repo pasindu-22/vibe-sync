@@ -5,14 +5,14 @@ import { cn } from "@/lib/utils"
 
 interface ProfilePopupProps {
   isExpanded: boolean
-  onClose: () => void
+  onCloseAction: () => void
 }
 
-export function ProfilePopup({ isExpanded, onClose }: ProfilePopupProps) {
+export function ProfilePopup({ isExpanded, onCloseAction }: ProfilePopupProps) {
   return (
     <>
       {/* Backdrop */}
-      <div className="fixed inset-0 z-40" onClick={onClose} />
+      <div className="fixed inset-0 z-40" onClick={onCloseAction} />
 
       {/* Popup */}
       <div

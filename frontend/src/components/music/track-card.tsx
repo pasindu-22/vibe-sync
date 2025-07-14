@@ -2,24 +2,17 @@
 
 import { Play, Pause } from "lucide-react"
 import { cn } from "@/lib/utils"
+import { Track } from "@/types"
+import Image from "next/image"
 
 interface TrackCardProps {
-  track: {
-    id: string
-    title: string
-    artist: string
-    album: string
-    duration: string
-    cover: string
-    genre: string
-    mood: string
-  }
+  track: Track
   isPlaying?: boolean
-  onPlay: () => void
+  onPlayAction: () => void
   className?: string
 }
 
-export function TrackCard({ track, isPlaying, onPlay, className }: TrackCardProps) {
+export function TrackCard({ track, isPlaying, onPlayAction, className }: TrackCardProps) {
   return (
     <div
       className={cn(
@@ -28,14 +21,16 @@ export function TrackCard({ track, isPlaying, onPlay, className }: TrackCardProp
       )}
     >
       <div className="relative mb-4">
-        <img
+        <Image
           src={track.cover || "/placeholder.svg"}
           alt={track.title}
+          width={200}
+          height={200}
           className="w-full aspect-square object-cover rounded-lg"
         />
         <button
-          onClick={onPlay}
-          className="absolute bottom-2 right-2 w-12 h-12 bg-green-500 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all duration-300 hover:scale-110 shadow-lg"
+          onClick={onPlayAction}
+          className="absolute bottom-2 right-2 w-10 h-10 bg-green-500 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all duration-300 hover:scale-110 shadow-lg cursor-pointer"
         >
           {isPlaying ? <Pause className="w-5 h-5 text-black" /> : <Play className="w-5 h-5 text-black ml-0.5" />}
         </button>

@@ -1,0 +1,131 @@
+name: Issue Labeler
+
+on:
+  issues:
+    types: [opened, edited]
+  pull_request:
+    types: [opened, edited, synchronize]
+
+jobs:
+  label-issues:
+    runs-on: ubuntu-latest
+    if: github.event_name == 'issues'
+    
+    steps:
+    - name: Label issues
+      uses: actions/github-script@v6
+      with:
+        script: |
+          const issue = context.payload.issue;
+          const title = issue.title.toLowerCase();
+          const body = issue.body ? issue.body.toLowerCase() : '';
+          
+          const labels = [];
+          
+          // Feature requests
+          if (title.includes('feature') || title.includes('enhancement') || body.includes('feature request')) {
+            labels.push('enhancement');
+          }
+          
+          // Bug reports
+          if (title.includes('bug') || title.includes('error') || title.includes('issue') || body.includes('bug')) {
+            labels.push('bug');
+          }
+          
+          // Frontend related
+          if (title.includes('frontend') || title.includes('ui') || title.includes('react') || title.includes('next')) {
+            labels.push('frontend');
+          }
+          
+          // Backend related
+          if (title.includes('backend') || title.includes('api') || title.includes('fastapi') || title.includes('python')) {
+            labels.push('backend');
+          }
+          
+          // Documentation
+          if (title.includes('docs') || title.includes('documentation') || title.includes('readme')) {
+            labels.push('documentation');
+          }
+          
+          // Music/Audio related
+          if (title.includes('music') || title.includes('audio') || title.includes('playlist') || title.includes('track')) {
+            labels.push('music-feature');
+          }
+          
+          // AI/ML related
+          if (title.includes('ai') || title.includes('classification') || title.includes('machine learning') || title.includes('ml')) {
+            labels.push('ai-ml');
+          }
+          
+          if (labels.length > 0) {
+            github.rest.issues.addLabels({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: issue.number,
+              labels: labels
+            });
+          }
+
+  label-prs:
+    runs-on: ubuntu-latest
+    if: github.event_name == 'pull_request'
+    
+    steps:
+    - name: Label pull requests
+      uses: actions/github-script@v6
+      with:
+        script: |
+          const pr = context.payload.pull_request;
+          const title = pr.title.toLowerCase();
+          const body = pr.body ? pr.body.toLowerCase() : '';
+          const files = await github.rest.pulls.listFiles({
+            owner: context.repo.owner,
+            repo: context.repo.repo,
+            pull_number: pr.number
+          });
+          
+          const labels = [];
+          const changedFiles = files.data.map(f => f.filename);
+          
+          // Check for frontend changes
+          if (changedFiles.some(f => f.startsWith('frontend/'))) {
+            labels.push('frontend');
+          }
+          
+          // Check for backend changes
+          if (changedFiles.some(f => f.startsWith('backend/'))) {
+            labels.push('backend');
+          }
+          
+          // Check for documentation changes
+          if (changedFiles.some(f => f.includes('README') || f.includes('.md'))) {
+            labels.push('documentation');
+          }
+          
+          // Check for configuration changes
+          if (changedFiles.some(f => f.includes('package.json') || f.includes('requirements.txt') || f.includes('.yml') || f.includes('.yaml'))) {
+            labels.push('configuration');
+          }
+          
+          // Size labels based on changes
+          const totalChanges = files.data.reduce((sum, file) => sum + file.additions + file.deletions, 0);
+          if (totalChanges < 10) {
+            labels.push('size/XS');
+          } else if (totalChanges < 50) {
+            labels.push('size/S');
+          } else if (totalChanges < 250) {
+            labels.push('size/M');
+          } else if (totalChanges < 1000) {
+            labels.push('size/L');
+          } else {
+            labels.push('size/XL');
+          }
+          
+          if (labels.length > 0) {
+            github.rest.issues.addLabels({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: pr.number,
+              labels: labels
+            });
+          }

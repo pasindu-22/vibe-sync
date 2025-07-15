@@ -7,6 +7,7 @@ import { MusicPlayer } from "@/components/music-player/music-player"
 import { LandingPage } from "@/components/landing/landing-page"
 import { Track } from "@/types"
 import { useAuth } from "@/lib/firebase/auth-context"
+import { mockTracks } from "@/data/mock/tracks"
 
 export function Dashboard() {
   const { user } = useAuth()

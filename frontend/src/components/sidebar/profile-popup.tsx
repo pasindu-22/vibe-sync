@@ -2,6 +2,8 @@
 
 import { LogOut, Settings, User } from "lucide-react"
 import { cn } from "@/lib/utils"
+import { useAuth } from "@/lib/firebase/auth-context"
+import { useRouter } from "next/navigation"
 
 interface ProfilePopupProps {
   isExpanded: boolean
@@ -9,6 +11,26 @@ interface ProfilePopupProps {
 }
 
 export function ProfilePopup({ isExpanded, onCloseAction }: ProfilePopupProps) {
+  const { user, logout } = useAuth()
+  const router = useRouter()
+  
+  const handleLogout = async () => {
+    try {
+      await logout()
+      // Close the popup first
+      onCloseAction()
+      // Force page reload to ensure all components recognize the auth state change
+      window.location.href = "/"
+    } catch (error) {
+      console.error("Logout failed:", error)
+    }
+  }
+  
+  const handleSettingsClick = () => {
+    router.push("/profile")
+    onCloseAction()
+  }
+  
   return (
     <>
       {/* Backdrop */}
@@ -28,8 +50,8 @@ export function ProfilePopup({ isExpanded, onCloseAction }: ProfilePopupProps) {
               <User className="w-5 h-5" />
             </div>
             <div>
-              <p className="font-medium text-white">John Doe</p>
-              <p className="text-sm text-white/60">john.doe@example.com</p>
+              <p className="font-medium text-white">{user?.displayName || 'User'}</p>
+              <p className="text-sm text-white/60">{user?.email || 'No email'}</p>
             </div>
           </div>
         </div>
@@ -38,11 +60,11 @@ export function ProfilePopup({ isExpanded, onCloseAction }: ProfilePopupProps) {
         <div className="p-4 border-b border-white/10">
           <div className="grid grid-cols-2 gap-4 text-center">
             <div>
-              <p className="text-lg font-bold text-white">1,247</p>
+              <p className="text-lg font-bold text-white">-</p>
               <p className="text-xs text-white/60">Songs Analyzed</p>
             </div>
             <div>
-              <p className="text-lg font-bold text-white">156</p>
+              <p className="text-lg font-bold text-white">-</p>
               <p className="text-xs text-white/60">Playlists</p>
             </div>
           </div>
@@ -50,11 +72,17 @@ export function ProfilePopup({ isExpanded, onCloseAction }: ProfilePopupProps) {
 
         {/* Actions */}
         <div className="p-2">
-          <button className="w-full flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-white/10 transition-colors text-white/70 hover:text-white">
+          <button 
+            className="w-full flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-white/10 transition-colors text-white/70 hover:text-white"
+            onClick={handleSettingsClick}
+          >
             <Settings className="w-4 h-4" />
-            <span>Settings</span>
+            <span>Profile Settings</span>
           </button>
-          <button className="w-full flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-red-500/20 transition-colors text-red-400 hover:text-red-300">
+          <button 
+            className="w-full flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-red-500/20 transition-colors text-red-400 hover:text-red-300"
+            onClick={handleLogout}
+          >
             <LogOut className="w-4 h-4" />
             <span>Logout</span>
           </button>

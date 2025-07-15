@@ -27,16 +27,17 @@ export function HomeView({ currentTrack, onViewChangeAction, onTrackSelectAction
       const spotifyData = await response.json()
       console.log("🎵 Spotify Data:", spotifyData)
 
+      onTrackSelectAction(track)
+
+
       if (!spotifyData.preview_url) {
   const confirmOpen = confirm("No preview available. Open full song in Spotify?")
   if (confirmOpen) {
     window.open(spotifyData.spotify_url, "_blank")
   }
-  return
 }
 
       // Update current track
-      onTrackSelectAction(track)
     } catch (error) {
       console.error("❌ Error fetching or playing track:", error)
     }

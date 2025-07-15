@@ -22,20 +22,20 @@ export function MainContent({ currentView, currentTrack, onViewChangeAction, onT
       case "home":
         return <HomeView currentTrack={currentTrack} onViewChangeAction={onViewChangeAction} onTrackSelectAction={onTrackSelectAction} />
       case "library":
-        return <LibraryView onTrackSelectAction={onTrackSelectAction} />
+        return <LibraryView onTrackSelectAction={onTrackSelectAction} onViewChangeAction={onViewChangeAction} />
       case "liked":
-        return <LikedSongsView onTrackSelectAction={onTrackSelectAction} />
+        return <LikedSongsView onTrackSelect={onTrackSelectAction} />
       case "recent":
-        return <RecentlyPlayedView onTrackSelectAction={onTrackSelectAction} />
+        return <RecentlyPlayedView onTrackSelect={onTrackSelectAction} />
       case "ai-classification":
-        return <AIClassificationView onTrackSelectAction={onTrackSelectAction} />
-      case "playlist-1":
-      case "playlist-2":
-      case "playlist-3":
-      case "playlist-4":
-        return <PlaylistView playlistId={currentView} onTrackSelectAction={onTrackSelectAction} />
+        return <AIClassificationView onTrackSelect={onTrackSelectAction} />
       default:
-        return <HomeView currentTrack={currentTrack} onTrackSelectAction={onTrackSelectAction} />
+        // Check if it's a playlist view (starts with "playlist-")
+        if (currentView.startsWith("playlist-")) {
+          return <PlaylistView playlistId={currentView} onTrackSelectAction={onTrackSelectAction} />
+        }
+        // Default to home view
+        return <HomeView currentTrack={currentTrack} onViewChangeAction={onViewChangeAction} onTrackSelectAction={onTrackSelectAction} />
     }
   }
 

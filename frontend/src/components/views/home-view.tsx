@@ -5,14 +5,31 @@ import { PlaylistCard } from "../music/playlist-card"
 import { Track } from "@/types"
 import { recentlyPlayedTracks } from "@/data/mock/tracks"
 import { aiRecommendations } from "@/data/mock/playlists"
+import { Playlist } from "@/types"
 
 interface HomeViewProps {
   currentTrack: Track
-  onViewChangeAction: (viwe: string) => void
+  onViewChangeAction: (view: string) => void
   onTrackSelectAction: (track: Track) => void
 }
 
 export function HomeView({ currentTrack, onViewChangeAction, onTrackSelectAction }: HomeViewProps) {
+
+  // Handle playlist play
+  const handlePlaylistPlay = (playlist: Playlist) => {
+    // TODO: Implement actual play logic
+    // after playing the first track, then start playing the second track
+    // and so on
+    if (playlist.tracks.length > 0) {
+      onTrackSelectAction(playlist.tracks[0])
+    }
+  }
+
+  // Handle playlist card click - navigate to playlist view
+  const handlePlaylistClick = (playlistId: string) => {
+    onViewChangeAction(playlistId)
+  }
+
   return (
     <div className="p-6 space-y-8">
       {/* Welcome Section */}
@@ -57,12 +74,10 @@ export function HomeView({ currentTrack, onViewChangeAction, onTrackSelectAction
         <div className="overflow-x-auto scrollbar-hidden">
           <div className="flex gap-4 min-w-[600px]">
             {aiRecommendations.map((playlist) => (
-              <div key={playlist.id} className="w-64 flex-shrink-0">
+              <div key={playlist.id} onClick={() => handlePlaylistClick(playlist.id)} className="w-64 flex-shrink-0">
                 <PlaylistCard
                   playlist={playlist}
-                  onPlayAction={() => {
-                    // Implement playlist play action
-                  }}
+                  onPlayAction={() => handlePlaylistPlay(playlist)}
                 />
               </div>
             ))}

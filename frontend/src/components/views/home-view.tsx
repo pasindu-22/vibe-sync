@@ -1,5 +1,6 @@
 "use client"
 
+import { useRef } from "react"
 import { TrackCard } from "../music/track-card"
 import { PlaylistCard } from "../music/playlist-card"
 import { Track } from "@/types"
@@ -14,18 +15,39 @@ interface HomeViewProps {
 }
 
 export function HomeView({ currentTrack, onViewChangeAction, onTrackSelectAction }: HomeViewProps) {
+  const audioRef = useRef<HTMLAudioElement | null>(null)
 
-  // Handle playlist play
-  const handlePlaylistPlay = (playlist: Playlist) => {
-    // TODO: Implement actual play logic
-    // after playing the first track, then start playing the second track
-    // and so on
-    if (playlist.tracks.length > 0) {
-      onTrackSelectAction(playlist.tracks[0])
+  const fetchAndPlayTrack = async (track: Track) => {
+    try {
+      const response = await fetch(
+        `http://localhost:8000/get_song?title=${encodeURIComponent(track.title)}&artist=${encodeURIComponent(track.artist)}`
+      )
+      if (!response.ok) throw new Error("Failed to fetch track info")
+
+      const spotifyData = await response.json()
+      console.log("🎵 Spotify Data:", spotifyData)
+
+      if (!spotifyData.preview_url) {
+  const confirmOpen = confirm("No preview available. Open full song in Spotify?")
+  if (confirmOpen) {
+    window.open(spotifyData.spotify_url, "_blank")
+  }
+  return
+}
+
+      // Update current track
+      onTrackSelectAction(track)
+    } catch (error) {
+      console.error("❌ Error fetching or playing track:", error)
     }
   }
 
-  // Handle playlist card click - navigate to playlist view
+  const handlePlaylistPlay = (playlist: Playlist) => {
+    if (playlist.tracks.length > 0) {
+      fetchAndPlayTrack(playlist.tracks[0])
+    }
+  }
+
   const handlePlaylistClick = (playlistId: string) => {
     onViewChangeAction(playlistId)
   }
@@ -47,7 +69,7 @@ export function HomeView({ currentTrack, onViewChangeAction, onTrackSelectAction
           {recentlyPlayedTracks.length > 10 && (
             <button
               className="text-sm text-white-400 hover:underline cursor-pointer focus:outline-none"
-              onClick={() => { onViewChangeAction("recent") }}
+              onClick={() => onViewChangeAction("recent")}
             >
               Show all
             </button>
@@ -60,7 +82,7 @@ export function HomeView({ currentTrack, onViewChangeAction, onTrackSelectAction
                 <TrackCard
                   track={track}
                   isPlaying={currentTrack?.id === track.id}
-                  onPlayAction={() => onTrackSelectAction(track)}
+                  onPlayAction={() => fetchAndPlayTrack(track)}
                 />
               </div>
             ))}
@@ -97,7 +119,10 @@ export function HomeView({ currentTrack, onViewChangeAction, onTrackSelectAction
             <p className="text-white/60 mb-4">Upload or record music to get AI-powered genre and mood analysis</p>
             <div className="text-purple-300 text-sm font-medium">Try AI Classification →</div>
           </div>
-          <div className="bg-white/5 border border-white/10 rounded-xl p-6 hover:bg-white/10 transition-all cursor-pointer">
+          <div
+            className="bg-white/5 border border-white/10 rounded-xl p-6 hover:bg-white/10 transition-all cursor-pointer"
+            onClick={() => onViewChangeAction("create-playlist")}
+          >
             <h3 className="text-xl font-semibold mb-2">Create Playlist</h3>
             <p className="text-white/60 mb-4">Build custom playlists based on your favorite genres and moods</p>
             <div className="text-white/70 text-sm font-medium">Get Started →</div>

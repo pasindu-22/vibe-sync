@@ -1,6 +1,8 @@
 # Backend
 backend/venv/
 backend/__pycache__/
+backend/.env.local
+backend/vibe-sync-admin.json
 *.pyc
 
 # Frontend

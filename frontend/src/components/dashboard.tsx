@@ -1,21 +1,23 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { Sidebar } from "@/components/sidebar/sidebar"
 import { MainContent } from "@/components/main-content"
 import { MusicPlayer } from "@/components/music-player/music-player"
 import { LandingPage } from "@/components/landing/landing-page"
 import { Track } from "@/types"
+import { useAuth } from "@/lib/firebase/auth-context"
 import { mockTracks } from "@/data/mock/tracks"
 
 export function Dashboard() {
-  const [isAuthenticated, setIsAuthenticated] = useState(true)
+  const { user } = useAuth()
+  const isAuthenticated = !!user
   const [currentView, setCurrentView] = useState("home")
   const [isSidebarExpanded, setIsSidebarExpanded] = useState(false)
   const [currentTrack, setCurrentTrack] = useState<Track>(mockTracks[0])
 
   if (!isAuthenticated) {
-    return <LandingPage onAuthenticatedAction={() => setIsAuthenticated(true)} />
+    return <LandingPage onAuthenticatedAction={() => {}} />
   }
 
   return (

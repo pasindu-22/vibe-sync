@@ -8,6 +8,8 @@ import { Dialog, DialogContent } from "@/components/ui/dialog"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { SocialLoginButton } from "./social-login-button"
+import { useAuth } from "@/lib/firebase/auth-context"
+import { toast } from "react-hot-toast"
 
 interface AuthModalProps {
   isOpen: boolean
@@ -21,23 +23,67 @@ export function AuthModal({ isOpen, onCloseAction, mode, onAuthenticatedAction }
   const [password, setPassword] = useState("")
   const [name, setName] = useState("")
   const [currentMode, setCurrentMode] = useState(mode)
+  const [isLoading, setIsLoading] = useState(false)
+  
+  const { signIn, signUp, signInWithGoogle, signInWithFacebook, signInWithApple, updateUserProfile } = useAuth()
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    // Simulate authentication
-    setTimeout(() => {
+    setIsLoading(true)
+    
+    try {
+      if (currentMode === "login") {
+        await signIn(email, password)
+      } else {
+        // Sign up with email and password
+        await signUp(email, password)
+        
+        // If name is provided, update the user's profile with the name
+        if (name.trim()) {
+          try {
+            // Short delay to ensure the auth state has updated
+            setTimeout(async () => {
+              await updateUserProfile(name);
+              console.log("Profile name updated successfully");
+            }, 1000);
+          } catch (profileError: any) {
+            console.error("Error updating profile:", profileError);
+            // Still consider the signup successful even if profile update fails
+          }
+        }
+      }
       onAuthenticatedAction()
       onCloseAction()
-    }, 1000)
+      toast.success(currentMode === "login" ? "Signed in successfully!" : "Account created successfully!")
+    } catch (error: any) {
+      toast.error(error.message || "Authentication failed")
+    } finally {
+      setIsLoading(false)
+    }
   }
 
-  const handleSocialLogin = (provider: string) => {
-    console.log(`Logging in with ${provider}`)
-    // Simulate social login
-    setTimeout(() => {
+  const handleSocialLogin = async (provider: string) => {
+    setIsLoading(true)
+    
+    try {
+      if (provider === "google") {
+        await signInWithGoogle()
+      } else if (provider === "facebook") {
+        await signInWithFacebook()
+      } else if (provider === "apple") {
+        await signInWithApple()
+      } else {
+        // Handle other providers if needed
+        throw new Error("Provider not supported")
+      }
       onAuthenticatedAction()
       onCloseAction()
-    }, 1000)
+      toast.success("Signed in successfully!")
+    } catch (error: any) {
+      toast.error(error.message || "Authentication failed")
+    } finally {
+      setIsLoading(false)
+    }
   }
 
   return (
@@ -60,6 +106,7 @@ export function AuthModal({ isOpen, onCloseAction, mode, onAuthenticatedAction }
               onClickAction={() => handleSocialLogin("google")}
               icon="/icons/google.svg"
               label="Continue with Google"
+              disabled={isLoading}
             />
 
             <SocialLoginButton
@@ -68,6 +115,7 @@ export function AuthModal({ isOpen, onCloseAction, mode, onAuthenticatedAction }
               icon="/icons/facebook.svg"
               label="Continue with Facebook"
               className="bg-blue-600 hover:bg-blue-700"
+              disabled={isLoading}
             />
 
             <SocialLoginButton
@@ -76,6 +124,7 @@ export function AuthModal({ isOpen, onCloseAction, mode, onAuthenticatedAction }
               icon="/icons/spotify.svg"
               label="Continue with Spotify"
               className="bg-green-600 hover:bg-green-700"
+              disabled={isLoading}
             />
 
             <SocialLoginButton
@@ -84,6 +133,7 @@ export function AuthModal({ isOpen, onCloseAction, mode, onAuthenticatedAction }
               icon="/icons/apple.svg"
               label="Continue with Apple Music"
               className="bg-black hover:bg-gray-900"
+              disabled={isLoading}
             />
           </div>
 
@@ -108,6 +158,7 @@ export function AuthModal({ isOpen, onCloseAction, mode, onAuthenticatedAction }
                   onChange={(e) => setName(e.target.value)}
                   className="bg-white/10 border-white/20 text-white placeholder:text-white/40"
                   required
+                  disabled={isLoading}
                 />
               </div>
             )}
@@ -120,6 +171,7 @@ export function AuthModal({ isOpen, onCloseAction, mode, onAuthenticatedAction }
                 onChange={(e) => setEmail(e.target.value)}
                 className="bg-white/10 border-white/20 text-white placeholder:text-white/40"
                 required
+                disabled={isLoading}
               />
             </div>
             <div>
@@ -131,13 +183,15 @@ export function AuthModal({ isOpen, onCloseAction, mode, onAuthenticatedAction }
                 onChange={(e) => setPassword(e.target.value)}
                 className="bg-white/10 border-white/20 text-white placeholder:text-white/40"
                 required
+                disabled={isLoading}
               />
             </div>
             <Button
               type="submit"
               className="w-full bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600"
+              disabled={isLoading}
             >
-              {currentMode === "login" ? "Sign In" : "Create Account"}
+              {isLoading ? "Processing..." : currentMode === "login" ? "Sign In" : "Create Account"}
             </Button>
           </form>
 
@@ -147,6 +201,7 @@ export function AuthModal({ isOpen, onCloseAction, mode, onAuthenticatedAction }
               <button
                 onClick={() => setCurrentMode(currentMode === "login" ? "signup" : "login")}
                 className="text-purple-400 hover:text-purple-300 font-medium"
+                disabled={isLoading}
               >
                 {currentMode === "login" ? "Sign up" : "Sign in"}
               </button>

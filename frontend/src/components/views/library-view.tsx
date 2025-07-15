@@ -1,156 +1,120 @@
 "use client"
 
-import { Search, Filter, Grid, List } from "lucide-react"
-import { useState } from "react"
-import { Input } from "@/components/ui/input"
+import { Filter } from "lucide-react"
+import { useState, useMemo } from "react"
 import { Button } from "@/components/ui/button"
-import { TrackCard } from "../music/track-card"
+import { PlaylistCard } from "../music/playlist-card"
+import { Track, Playlist } from "@/types"
+import { mockPlaylists } from "@/data/mock/playlists"
 
 interface LibraryViewProps {
-  onTrackSelect: (track: any) => void
+  onTrackSelectAction: (track: Track) => void
+  onViewChangeAction: (view: string) => void
 }
 
-const mockLibrary = [
-  {
-    id: "1",
-    title: "Bohemian Rhapsody",
-    artist: "Queen",
-    album: "A Night at the Opera",
-    duration: "5:55",
-    cover: "/placeholder.svg?height=300&width=300",
-    genre: "Rock",
-    mood: "Epic",
-  },
-  {
-    id: "2",
-    title: "Billie Jean",
-    artist: "Michael Jackson",
-    album: "Thriller",
-    duration: "4:54",
-    cover: "/placeholder.svg?height=300&width=300",
-    genre: "Pop",
-    mood: "Energetic",
-  },
-  {
-    id: "3",
-    title: "Hotel California",
-    artist: "Eagles",
-    album: "Hotel California",
-    duration: "6:30",
-    cover: "/placeholder.svg?height=300&width=300",
-    genre: "Rock",
-    mood: "Mysterious",
-  },
-  {
-    id: "4",
-    title: "Shape of You",
-    artist: "Ed Sheeran",
-    album: "÷ (Divide)",
-    duration: "3:53",
-    cover: "/placeholder.svg?height=300&width=300",
-    genre: "Pop",
-    mood: "Happy",
-  },
-  {
-    id: "5",
-    title: "Stairway to Heaven",
-    artist: "Led Zeppelin",
-    album: "Led Zeppelin IV",
-    duration: "8:02",
-    cover: "/placeholder.svg?height=300&width=300",
-    genre: "Rock",
-    mood: "Epic",
-  },
-  {
-    id: "6",
-    title: "Thriller",
-    artist: "Michael Jackson",
-    album: "Thriller",
-    duration: "5:57",
-    cover: "/placeholder.svg?height=300&width=300",
-    genre: "Pop",
-    mood: "Dark",
-  },
-]
+export function LibraryView({ onTrackSelectAction, onViewChangeAction }: LibraryViewProps) {
+  const [genreFilter, setGenreFilter] = useState<string>("all")
+  const [moodFilter, setMoodFilter] = useState<string>("all")
 
-export function LibraryView({ onTrackSelect }: LibraryViewProps) {
-  const [searchQuery, setSearchQuery] = useState("")
-  const [viewMode, setViewMode] = useState<"grid" | "list">("grid")
+  const genres = ["all", "disco", "metal", "reggae", "blues", "rock", "classical", "jazz", "hiphop", "country", "pop", "soul", "alternative", "grunge"]
+  const moods = ["all", "energetic", "happy", "melancholic", "epic", "groovy", "chill", "dark", "romantic", "powerful", "rebellious", "peaceful", "nostalgic", "intense", "soulful", "sophisticated", "motivational", "uplifting", "elegant"]
 
-  const filteredTracks = mockLibrary.filter(
-    (track) =>
-      track.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      track.artist.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      track.genre.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      track.mood.toLowerCase().includes(searchQuery.toLowerCase()),
-  )
+  // Filter playlists based on their tracks' genres and moods
+  const filteredPlaylists = useMemo(() => {
+    return mockPlaylists.filter((playlist: Playlist) => {
+      if (genreFilter === "all" && moodFilter === "all") return true
+      
+      return playlist.tracks.some(track => {
+        const genreMatch = genreFilter === "all" || track.genre.toLowerCase() === genreFilter.toLowerCase()
+        const moodMatch = moodFilter === "all" || track.mood.toLowerCase() === moodFilter.toLowerCase()
+        return genreMatch && moodMatch
+      })
+    })
+  }, [genreFilter, moodFilter])
+
+  // Handle playlist play
+  const handlePlaylistPlay = (playlist: Playlist) => {
+    // TODO: Implement actual play logic
+    // after playing the first track, then start playing the second track
+    // and so on
+    if (playlist.tracks.length > 0) {
+      onTrackSelectAction(playlist.tracks[0])
+    }
+  }
+
+  // Handle playlist card click - navigate to playlist view
+  const handlePlaylistClick = (playlistId: string) => {
+    onViewChangeAction(playlistId)
+  }
 
   return (
     <div className="p-6 space-y-6">
       <div className="space-y-2">
         <h1 className="text-4xl font-bold">Your Library</h1>
-        <p className="text-white/60">{mockLibrary.length} songs in your collection</p>
+        <p className="text-white/60">{filteredPlaylists.length} playlists in your collection</p>
       </div>
 
-      {/* Search and Filters */}
-      <div className="flex gap-4 items-center">
-        <div className="relative flex-1 max-w-md">
-          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-white/40" />
-          <Input
-            placeholder="Search your music..."
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            className="pl-10 bg-white/10 border-white/20 text-white placeholder:text-white/40"
-          />
+      {/* Genre and Mood Filters */}
+      <div className="flex gap-4 items-center flex-wrap">
+        <div className="flex items-center gap-2">
+          <span className="text-sm text-white/80">Genre:</span>
+          <select
+            value={genreFilter}
+            onChange={(e) => setGenreFilter(e.target.value)}
+            className="bg-white/10 border border-white/20 text-white rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500"
+          >
+            {genres.map((genre) => (
+                <option key={genre} value={genre} className="bg-white/10 text-black">
+                {genre.charAt(0).toUpperCase() + genre.slice(1)}
+                </option>
+            ))}
+          </select>
+        </div>
+
+        <div className="flex items-center gap-2">
+          <span className="text-sm text-white/80">Mood:</span>
+          <select
+            value={moodFilter}
+            onChange={(e) => setMoodFilter(e.target.value)}
+            className="bg-white/10 border border-white/20 text-white rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500"
+          >
+            {moods.map((mood) => (
+              <option key={mood} value={mood} className="bg-white/10 text-black">
+                {mood.charAt(0).toUpperCase() + mood.slice(1)}
+              </option>
+            ))}
+          </select>
         </div>
 
         <Button
           variant="outline"
-          size="icon"
+          size="sm"
+          onClick={() => {
+            setGenreFilter("all")
+            setMoodFilter("all")
+          }}
           className="border-white/20 text-white/60 hover:text-white hover:bg-white/10 bg-transparent"
         >
-          <Filter className="w-4 h-4" />
+          <Filter className="w-4 h-4 mr-2" />
+          Clear Filters
         </Button>
-
-        <div className="flex border border-white/20 rounded-lg overflow-hidden">
-          <Button
-            variant={viewMode === "grid" ? "default" : "ghost"}
-            size="icon"
-            onClick={() => setViewMode("grid")}
-            className="rounded-none border-0"
-          >
-            <Grid className="w-4 h-4" />
-          </Button>
-          <Button
-            variant={viewMode === "list" ? "default" : "ghost"}
-            size="icon"
-            onClick={() => setViewMode("list")}
-            className="rounded-none border-0"
-          >
-            <List className="w-4 h-4" />
-          </Button>
-        </div>
       </div>
 
-      {/* Music Grid */}
-      <div
-        className={`grid gap-4 ${
-          viewMode === "grid" ? "grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4" : "grid-cols-1"
-        }`}
-      >
-        {filteredTracks.map((track) => (
-          <TrackCard
-            key={track.id}
-            track={track}
-            onPlay={() => onTrackSelect(track)}
-            className={viewMode === "list" ? "flex-row items-center" : ""}
-          />
+      {/* Playlists Grid */}
+      <div className="grid gap-4 grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6">
+        {filteredPlaylists.map((playlist) => (
+          <div key={playlist.id} onClick={() => handlePlaylistClick(playlist.id)}>
+            <PlaylistCard
+              playlist={playlist}
+              onPlayAction={() => handlePlaylistPlay(playlist)}
+            />
+          </div>
         ))}
       </div>
 
-      {filteredTracks.length === 0 && (
+      {filteredPlaylists.length === 0 && (
         <div className="text-center py-12">
-          <p className="text-white/60">No tracks found matching your search.</p>
+          <p className="text-white/60">No playlists found matching your filters.</p>
         </div>
       )}
     </div>

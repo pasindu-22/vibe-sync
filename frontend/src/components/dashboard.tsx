@@ -13,17 +13,7 @@ export function Dashboard() {
   const isAuthenticated = !!user
   const [currentView, setCurrentView] = useState("home")
   const [isSidebarExpanded, setIsSidebarExpanded] = useState(false)
-  const [currentTrack, setCurrentTrack] = useState<Track>({
-    id: "1",
-    title: "Bohemian Rhapsody",
-    artist: "Queen",
-    album: "A Night at the Opera",
-    duration: 355, // 5 minutes 55 seconds in seconds
-    cover: "/TODO-Delete/Music-Cover-1.jpg",
-    genre: "Rock",
-    mood: "Epic",
-    isPlaying: false,
-  })
+  const [currentTrack, setCurrentTrack] = useState<Track>(mockTracks[0])
 
   if (!isAuthenticated) {
     return <LandingPage onAuthenticatedAction={() => {}} />

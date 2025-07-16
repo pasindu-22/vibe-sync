@@ -1,4 +1,4 @@
-import { Track, Playlist, User } from '../../types';
+import { Track, Playlist } from '../../types';
 import { mockTracks, recentlyPlayedTracks, likedTracks, trendingTracks } from './tracks';
 import { mockPlaylists, userPlaylists, featuredPlaylists, recentPlaylists, aiRecommendations } from './playlists';
 import { 

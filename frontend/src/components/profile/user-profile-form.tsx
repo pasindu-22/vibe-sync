@@ -18,8 +18,9 @@ export function UserProfileForm() {
     try {
       await updateUserProfile(displayName)
       toast.success("Profile updated successfully!")
-    } catch (error: any) {
-      toast.error(error.message || "Failed to update profile")
+    } catch (error: unknown) {
+      const errorMessage = error instanceof Error ? error.message : "Failed to update profile"
+      toast.error(errorMessage)
       console.error(error)
     } finally {
       setIsUpdating(false)

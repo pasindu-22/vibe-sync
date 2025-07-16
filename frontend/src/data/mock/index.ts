@@ -1,7 +1,6 @@
-import { Track, Playlist, User } from '../../types';
+import { Track, Playlist } from '../../types';
 import { mockTracks, recentlyPlayedTracks, likedTracks, trendingTracks } from './tracks';
 import { mockPlaylists, userPlaylists, featuredPlaylists, recentPlaylists, aiRecommendations } from './playlists';
-import { mockUsers, currentUser, userStats } from './users';
 import { 
   musicGenres, 
   musicMoods, 
@@ -25,11 +24,6 @@ export const mockData = {
   recentPlaylists: recentPlaylists,
   aiRecommendations: aiRecommendations,
 
-  // Users
-  users: mockUsers,
-  currentUser: currentUser,
-  userStats: userStats,
-
   // Metadata
   genres: musicGenres,
   moods: musicMoods,
@@ -48,11 +42,6 @@ export const mockUtils = {
   // Get playlist by ID
   getPlaylistById: (id: string): Playlist | undefined => {
     return mockPlaylists.find(playlist => playlist.id === id);
-  },
-
-  // Get user by ID
-  getUserById: (id: string): User | undefined => {
-    return mockUsers.find(user => user.id === id);
   },
 
   // Search tracks by title, artist, or album
@@ -132,9 +121,6 @@ export const mockUtils = {
 export {
   mockTracks,
   mockPlaylists,
-  mockUsers,
-  currentUser,
-  userStats,
   musicGenres,
   musicMoods,
   listeningStats,

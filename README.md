@@ -7,15 +7,37 @@ This project is a web application that allows users to upload or link music trac
 
 ```
 vibe-sync/
-├── backend/                # FastAPI backend
-│   ├── app/
-│   │   ├── main.py         # FastAPI main application
-│   │   ├── models.py       # Database models and data structures
-│   │   ├── services.py     # Business logic for music classification
-│   └── requirements.txt    # Python dependencies for FastAPI
-├── frontend/               # Next.js frontend
-│   └── (Next.js project files)
-└── README.md
+├── .github/                    # GitHub workflows and templates
+│   ├── workflows/              # CI/CD pipelines
+│   ├── ISSUE_TEMPLATE/         # Issue templates
+│   └── PULL_REQUEST_TEMPLATE.md
+├── backend/                    # FastAPI backend
+│   ├── app/                    # Core application logic
+│   │   └── routers/            # API route handlers
+│   ├── .env.example            # Environment variables template
+│   ├── requirements.txt        # Python dependencies
+│   └── vibe-sync-admin.json    # Firebase admin configuration
+├── frontend/                   # Next.js frontend application
+│   ├── src/
+│   │   ├── app/                # Next.js 13+ app router
+│   │   ├── components/         # Reusable UI components
+│   │   │   ├── ai/             # AI classification components
+│   │   │   ├── landing/        # Landing page components
+│   │   │   ├── music/          # Music-related components
+│   │   │   ├── music-player/   # Audio player components
+│   │   │   ├── sidebar/        # Navigation components
+│   │   │   ├── ui/             # Base UI components
+│   │   │   └── views/          # Page view components
+│   │   ├── data/
+│   │   │   └── mock/           # Mock data for development
+│   │   ├── lib/
+│   │   │   └── firebase/       # Firebase authentication
+│   │   └── types/              # TypeScript type definitions
+│   ├── public/                 # Static assets
+│   ├── .env.example            # Frontend environment template
+│   └── package.json            # Node.js dependencies
+├── FIREBASE_AUTH_SETUP.md      # Firebase setup documentation
+└── README.md                   # Project documentation
 ```
 
 ## Prerequisites

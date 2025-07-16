@@ -42,9 +42,14 @@ export function Sidebar({ currentView, onViewChangeAction, isExpanded, onToggleE
       {/* Header with Logo and Collapse Button */}
       <div className="p-4 border-b border-white/10 flex items-center justify-between">
         <div className="flex items-center gap-3">
-          <div className="w-8 h-8 bg-gradient-to-r from-purple-500 to-pink-500 rounded-lg flex items-center justify-center">
-            <Music className="w-5 h-5" />
-          </div>
+            <div
+            className="w-8 h-8 bg-gradient-to-r from-purple-500 to-pink-500 rounded-lg flex items-center justify-center cursor-pointer group transition-transform duration-300 hover:scale-110 active:scale-95"
+            onClick={() => onToggleExpandedAction(!isExpanded)}
+            >
+            <Music
+              className="w-5 h-5 text-white transition-transform duration-500 group-hover:rotate-12 group-active:scale-110"
+            />
+            </div>
           {isExpanded && <span className="font-bold text-xl">VibeSync</span>}
         </div>
 

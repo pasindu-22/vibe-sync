@@ -24,11 +24,6 @@ export const mockData = {
   recentPlaylists: recentPlaylists,
   aiRecommendations: aiRecommendations,
 
-  // Users
-  users: mockUsers,
-  currentUser: currentUser,
-  userStats: userStats,
-
   // Metadata
   genres: musicGenres,
   moods: musicMoods,
@@ -47,11 +42,6 @@ export const mockUtils = {
   // Get playlist by ID
   getPlaylistById: (id: string): Playlist | undefined => {
     return mockPlaylists.find(playlist => playlist.id === id);
-  },
-
-  // Get user by ID
-  getUserById: (id: string): User | undefined => {
-    return mockUsers.find(user => user.id === id);
   },
 
   // Search tracks by title, artist, or album

@@ -1,7 +1,6 @@
 import { Track, Playlist, User } from '../../types';
 import { mockTracks, recentlyPlayedTracks, likedTracks, trendingTracks } from './tracks';
 import { mockPlaylists, userPlaylists, featuredPlaylists, recentPlaylists, aiRecommendations } from './playlists';
-import { mockUsers, currentUser, userStats } from './users';
 import { 
   musicGenres, 
   musicMoods, 
@@ -132,9 +131,6 @@ export const mockUtils = {
 export {
   mockTracks,
   mockPlaylists,
-  mockUsers,
-  currentUser,
-  userStats,
   musicGenres,
   musicMoods,
   listeningStats,

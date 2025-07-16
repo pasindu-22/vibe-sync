@@ -1,49 +1,95 @@
 "use client"
 
 import { useState } from "react"
-import { Mic, Link, Upload, Sparkles, Music, Brain } from "lucide-react"
+import { Mic, Link, Upload, Sparkles, Music, Brain, Plus, RefreshCw, Library, Play, Trash } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { TrackCard } from "../music/track-card"
+import { Track, AnalysisResults } from "@/types"
+import { mockTracks } from "@/data/mock/tracks"
+import Image from "next/image"
 
 interface AIClassificationViewProps {
-  onTrackSelect: (track: any) => void
+  onTrackSelectAction: (track: Track) => void
 }
 
-const mockAnalyzedTracks = [
-  {
-    id: "ai-1",
-    title: "Analyzed Track 1",
-    artist: "AI Artist",
-    album: "AI Album",
-    duration: "3:45",
-    cover: "/placeholder.svg?height=300&width=300",
-    genre: "Electronic",
-    mood: "Energetic",
-    confidence: { genre: 0.94, mood: 0.89 },
-    features: { tempo: 128, energy: 0.87, valence: 0.76 },
-  },
-  {
-    id: "ai-2",
-    title: "Analyzed Track 2",
-    artist: "AI Artist 2",
-    album: "AI Album 2",
-    duration: "4:12",
-    cover: "/placeholder.svg?height=300&width=300",
-    genre: "Jazz",
-    mood: "Calm",
-    confidence: { genre: 0.91, mood: 0.85 },
-    features: { tempo: 95, energy: 0.45, valence: 0.62 },
-  },
-]
-
-export function AIClassificationView({ onTrackSelect }: AIClassificationViewProps) {
+export function AIClassificationView({ onTrackSelectAction }: AIClassificationViewProps) {
   const [isRecording, setIsRecording] = useState(false)
   const [url, setUrl] = useState("")
   const [isAnalyzing, setIsAnalyzing] = useState(false)
-  const [results, setResults] = useState<any>(null)
+  const [results, setResults] = useState<AnalysisResults | null>(null)
   const [activeTab, setActiveTab] = useState("mic")
+  const [suggestedTracks, setSuggestedTracks] = useState<Track[]>([])
+  const [isGeneratingPlaylist, setIsGeneratingPlaylist] = useState(false)
+  const [playlistName, setPlaylistName] = useState("")
+
+  // Generate suggested tracks based on analysis results
+  const generateSuggestedPlaylist = (genre: string, mood: string) => {
+    setIsGeneratingPlaylist(true)
+
+    // Filter tracks that match the genre or mood
+    const matchingTracks = mockTracks.filter(track =>
+      track.genre === genre || track.mood === mood
+    ).slice(0, 8) // Get 8 suggested tracks
+
+    // If not enough matching tracks, add some random ones
+    const additionalTracks = mockTracks
+      .filter(track => !matchingTracks.includes(track))
+      .slice(0, Math.max(0, 8 - matchingTracks.length))
+
+    const playlist = [...matchingTracks, ...additionalTracks]
+
+    setTimeout(() => {
+      setSuggestedTracks(playlist)
+      setPlaylistName(`${mood} ${genre} Mix`)
+      setIsGeneratingPlaylist(false)
+    }, 1500)
+  }
+
+  const addMoreTracks = () => {
+    if (!results) return
+
+    setIsGeneratingPlaylist(true)
+
+    // Get additional tracks not already in the playlist
+    const availableTracks = mockTracks.filter(track =>
+      !suggestedTracks.some(existing => existing.id === track.id)
+    )
+
+    // First try to get tracks that match the analysis results
+    const matchingTracks = availableTracks.filter(track =>
+      track.genre === results.genre.label || track.mood === results.mood.label
+    ).slice(0, 4)
+
+    // If we don't have enough matching tracks, fill with any remaining tracks
+    const additionalTracks = matchingTracks.length < 4
+      ? availableTracks.filter(track =>
+        !matchingTracks.includes(track)
+      ).slice(0, 4 - matchingTracks.length)
+      : []
+
+    const newTracks = [...matchingTracks, ...additionalTracks]
+
+    setTimeout(() => {
+      // Add new tracks to existing playlist (keeping all previous tracks)
+      setSuggestedTracks(prev => [...prev, ...newTracks])
+      setIsGeneratingPlaylist(false)
+    }, 1000)
+  }
+
+  const removeTrack = (trackId: string) => {
+    setSuggestedTracks(prev => prev.filter(track => track.id !== trackId))
+  }
+
+  const regeneratePlaylist = () => {
+    if (!results) return
+    generateSuggestedPlaylist(results.genre.label, results.mood.label)
+  }
+
+  const addToLibrary = () => {
+    // TODO: Implement actual library addition logic
+    alert(`Playlist "${playlistName}" added to your library!`)
+  }
 
   const handleMicRecord = () => {
     setIsRecording(!isRecording)
@@ -65,13 +111,16 @@ export function AIClassificationView({ onTrackSelect }: AIClassificationViewProp
     setIsAnalyzing(true)
     setTimeout(() => {
       setIsAnalyzing(false)
-      setResults({
+      const analysisResults = {
         genre: { label: "Rock", confidence: 0.92 },
         mood: { label: "Energetic", confidence: 0.87 },
         tempo: 120,
         energy: 0.85,
         valence: 0.73,
-      })
+      }
+      setResults(analysisResults)
+      // Generate suggested playlist based on analysis
+      generateSuggestedPlaylist(analysisResults.genre.label, analysisResults.mood.label)
     }, 2000)
   }
 
@@ -119,13 +168,12 @@ export function AIClassificationView({ onTrackSelect }: AIClassificationViewProp
                   <div className="relative">
                     <button
                       onClick={handleMicRecord}
-                      className={`w-32 h-32 rounded-full flex items-center justify-center transition-all duration-300 ${
-                        isRecording
+                      className={`w-24 h-24 rounded-full flex items-center justify-center transition-all duration-300 ${isRecording
                           ? "bg-red-500 animate-pulse"
                           : "bg-gradient-to-r from-purple-500 to-pink-500 hover:scale-105"
-                      }`}
+                        }`}
                     >
-                      <Mic className="w-12 h-12" />
+                      <Mic className="w-8 h-8" />
                     </button>
                     {isRecording && (
                       <div className="absolute inset-0 rounded-full border-4 border-red-500 animate-ping" />
@@ -232,50 +280,157 @@ export function AIClassificationView({ onTrackSelect }: AIClassificationViewProp
                   <p className="text-lg font-medium">{Math.round(results.valence * 100)}%</p>
                 </div>
               </div>
-
-              <Button className="w-full mt-4 bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600">
-                Add to Library
-              </Button>
             </div>
           )}
         </div>
 
-        {/* Previously Analyzed */}
+        {/* Suggested Playlist */}
         <div className="space-y-6">
-          <div className="bg-white/5 backdrop-blur-sm rounded-xl p-6 border border-white/10">
-            <h2 className="text-xl font-semibold mb-4">Recently Analyzed</h2>
-            <div className="space-y-4">
-              {mockAnalyzedTracks.map((track) => (
-                <div key={track.id} className="space-y-3">
-                  <TrackCard track={track} onPlay={() => onTrackSelect(track)} className="bg-white/5" />
-                  <div className="px-4 space-y-2">
-                    <div className="flex justify-between text-sm">
-                      <span className="text-white/60">Genre Confidence:</span>
-                      <span className="text-purple-300">{Math.round(track.confidence.genre * 100)}%</span>
-                    </div>
-                    <div className="flex justify-between text-sm">
-                      <span className="text-white/60">Mood Confidence:</span>
-                      <span className="text-pink-300">{Math.round(track.confidence.mood * 100)}%</span>
-                    </div>
-                    <div className="grid grid-cols-3 gap-2 text-xs text-white/50 pt-2 border-t border-white/10">
-                      <div className="text-center">
-                        <p>Tempo</p>
-                        <p className="text-white/70">{track.features.tempo}</p>
-                      </div>
-                      <div className="text-center">
-                        <p>Energy</p>
-                        <p className="text-white/70">{Math.round(track.features.energy * 100)}%</p>
-                      </div>
-                      <div className="text-center">
-                        <p>Valence</p>
-                        <p className="text-white/70">{Math.round(track.features.valence * 100)}%</p>
-                      </div>
-                    </div>
+          {results && suggestedTracks.length > 0 ? (
+            <div className="bg-white/5 backdrop-blur-sm rounded-xl p-6 border border-white/10">
+              <div className="flex items-center justify-between mb-4">
+                <div>
+                  <h2 className="text-xl font-semibold">Suggested Playlist</h2>
+                  <p className="text-sm text-white/60">Based on {results.mood.label} {results.genre.label} analysis</p>
+                </div>
+                <Button
+                  onClick={addToLibrary}
+                  className="bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600"
+                >
+                  <Library className="w-4 h-4 mr-2" />
+                  Add to Library
+                </Button>
+              </div>
+
+              {/* Playlist Name */}
+              <div className="mb-4">
+                <Input
+                  value={playlistName}
+                  onChange={(e) => setPlaylistName(e.target.value)}
+                  className="bg-white/10 border-white/20 text-white placeholder:text-white/40"
+                  placeholder="Playlist name"
+                />
+              </div>
+
+              {/* Playlist Actions */}
+              <div className="flex gap-2 mb-6">
+                <Button
+                  onClick={regeneratePlaylist}
+                  variant="outline"
+                  size="sm"
+                  disabled={isGeneratingPlaylist}
+                  className="border-white/20 text-white hover:bg-white/10"
+                >
+                  <RefreshCw className={`w-4 h-4 mr-2 ${isGeneratingPlaylist ? 'animate-spin' : ''}`} />
+                  Regenerate
+                </Button>
+              </div>
+
+              {/* Track List */}
+              {isGeneratingPlaylist ? (
+                <div className="flex items-center justify-center py-8">
+                  <div className="flex items-center gap-3">
+                    <Brain className="w-5 h-5 animate-pulse text-purple-400" />
+                    <span className="text-white/60">Generating playlist...</span>
                   </div>
                 </div>
-              ))}
+              ) : (
+                <div className="space-y-2">
+                  {suggestedTracks.map((track, index) => (
+                    <div
+                      key={track.id}
+                      className="flex items-center gap-4 p-3 rounded-lg hover:bg-white/5 transition-colors group"
+                    >
+                      <span className="w-8 text-center text-white/60 text-sm">
+                        {index + 1}
+                      </span>
+                      <div className="flex items-center gap-3 flex-1">
+                        <Image
+                          src={track.cover || "/placeholder.svg"}
+                          alt={track.title}
+                          width={48}
+                          height={48}
+                          className="w-12 h-12 object-cover rounded-lg"
+                        />
+                        <div className="flex-1 min-w-0">
+                          <h3 className="font-medium text-white truncate">{track.title}</h3>
+                          <p className="text-sm text-white/60 truncate">{track.artist}</p>
+                        </div>
+                        <div className="flex gap-2">
+                          <span className="px-2 py-1 bg-purple-500/20 text-purple-300 text-xs rounded-full">
+                            {track.genre}
+                          </span>
+                          <span className="px-2 py-1 bg-pink-500/20 text-pink-300 text-xs rounded-full">
+                            {track.mood}
+                          </span>
+                        </div>
+                        <div className="flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            onClick={() => onTrackSelectAction(track)}
+                            className="text-white/60 hover:text-white hover:bg-white/10 w-8 h-8"
+                          >
+                            <Play className="w-4 h-4" />
+                          </Button>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            onClick={() => removeTrack(track.id)}
+                            className="text-white/60 hover:text-white hover:bg-white/10 w-8 h-8"
+                          >
+                            <Trash className="w-4 h-4" />
+                          </Button>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+
+              {/* Add More Button at bottom */}
+              {!isGeneratingPlaylist && suggestedTracks.length > 0 && (
+                <div className="mt-4 pt-4 border-t border-white/10 text-center">
+                  <Button
+                    onClick={addMoreTracks}
+                    variant="outline"
+                    size="sm"
+                    disabled={suggestedTracks.length >= mockTracks.length}
+                    className="border-white/20 text-white hover:bg-white/10 disabled:opacity-50"
+                  >
+                    <Plus className="w-4 h-4 mr-2" />
+                    {suggestedTracks.length >= mockTracks.length ? 'No More Tracks' : 'Add More Tracks'}
+                  </Button>
+                </div>
+              )}
             </div>
-          </div>
+          ) : results ? (
+            <div className="bg-white/5 backdrop-blur-sm rounded-xl p-6 border border-white/10">
+              <div className="text-center py-8">
+                <Brain className="w-12 h-12 mx-auto mb-4 text-purple-400" />
+                <h3 className="text-lg font-medium mb-2">Ready to Generate Playlist</h3>
+                <p className="text-white/60 mb-4">
+                  Based on your {results.mood.label} {results.genre.label} analysis
+                </p>
+                <Button
+                  onClick={() => generateSuggestedPlaylist(results.genre.label, results.mood.label)}
+                  className="bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600"
+                >
+                  Generate Playlist
+                </Button>
+              </div>
+            </div>
+          ) : (
+            <div className="bg-white/5 backdrop-blur-sm rounded-xl p-6 border border-white/10">
+              <div className="text-center py-8">
+                <Sparkles className="w-12 h-12 mx-auto mb-4 text-white/40" />
+                <h3 className="text-lg font-medium mb-2">No Analysis Yet</h3>
+                <p className="text-white/60">
+                  Analyze some music to get personalized playlist suggestions
+                </p>
+              </div>
+            </div>
+          )}
         </div>
       </div>
     </div>

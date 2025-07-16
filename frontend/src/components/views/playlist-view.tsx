@@ -13,7 +13,7 @@ interface PlaylistViewProps {
 }
 
 export function PlaylistView({ playlistId, onTrackSelectAction }: PlaylistViewProps) {
-  const [viewMode, setViewMode] = useState<'grid' | 'list'>('list')
+  const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid')
   const playlist = mockPlaylists.find(p => p.id === playlistId)
 
   if (!playlist) {
@@ -42,27 +42,27 @@ export function PlaylistView({ playlistId, onTrackSelectAction }: PlaylistViewPr
       {/* Header */}
       <div className="flex items-end gap-6">
         {playlist.tracks.length >= 4 ? (
-          <div className="aspect-square rounded-lg overflow-hidden grid grid-cols-2 grid-rows-2 gap-[2px] bg-black">
+          <div className="w-48 h-48 aspect-square rounded-lg overflow-hidden grid grid-cols-2 grid-rows-2 gap-[2px] bg-black">
             {playlist.tracks
               .slice(0, 4)
               .map((track, index) => (
-                <Image
-                  key={index}
-                  src={track.cover || "/placeholder.svg"}
-                  alt={track.title}
-                  width={75}
-                  height={75}
-                  className="w-full h-full object-cover"
-                />
+          <Image
+            key={index}
+            src={track.cover || "/placeholder.svg"}
+            alt={track.title}
+            width={96}
+            height={96}
+            className="w-full h-full object-cover"
+          />
               ))}
           </div>
         ) : (
           <Image
             src={playlist.cover || "/placeholder.svg"}
             alt={playlist.name}
-            width={150}
-            height={150}
-            className="w-full aspect-square object-cover rounded-lg"
+            width={192}
+            height={192}
+            className="w-48 h-48 aspect-square object-cover rounded-lg"
           />
         )}
         <div className="space-y-2">

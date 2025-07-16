@@ -6,17 +6,18 @@ import { Dialog, DialogContent } from "@/components/ui/dialog"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { AnalysisResults } from "@/types"
 
 interface AIClassificationModalProps {
   isOpen: boolean
-  onClose: () => void
+  onCloseAction: () => void
 }
 
-export function AIClassificationModal({ isOpen, onClose }: AIClassificationModalProps) {
+export function AIClassificationModal({ isOpen, onCloseAction }: AIClassificationModalProps) {
   const [isRecording, setIsRecording] = useState(false)
   const [url, setUrl] = useState("")
   const [isAnalyzing, setIsAnalyzing] = useState(false)
-  const [results, setResults] = useState<any>(null)
+  const [results, setResults] = useState<AnalysisResults | null>(null)
 
   const handleMicRecord = () => {
     setIsRecording(!isRecording)
@@ -50,7 +51,7 @@ export function AIClassificationModal({ isOpen, onClose }: AIClassificationModal
   }
 
   return (
-    <Dialog open={isOpen} onOpenChange={onClose}>
+    <Dialog open={isOpen} onOpenChange={onCloseAction}>
       <DialogContent className="max-w-2xl bg-slate-900/95 backdrop-blur-xl border-white/20 text-white">
         <div className="flex items-center justify-between mb-6">
           <div className="flex items-center gap-3">
@@ -62,7 +63,7 @@ export function AIClassificationModal({ isOpen, onClose }: AIClassificationModal
               <p className="text-sm text-white/60">Analyze genre and mood with AI</p>
             </div>
           </div>
-          <Button variant="ghost" size="icon" onClick={onClose} className="text-white/60 hover:text-white">
+          <Button variant="ghost" size="icon" onClick={onCloseAction} className="text-white/60 hover:text-white">
             <X className="w-5 h-5" />
           </Button>
         </div>

@@ -32,3 +32,11 @@ export interface User {
     volume: number;
   };
 }
+
+export interface AnalysisResults {
+    genre: { label: string; confidence: number }
+    mood: { label: string; confidence: number }
+    tempo: number
+    energy: number
+    valence: number
+  }

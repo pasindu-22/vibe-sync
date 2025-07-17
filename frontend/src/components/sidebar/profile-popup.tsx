@@ -98,7 +98,7 @@ export function ProfilePopup({ isExpanded, onCloseAction, onOpenSettings }: Prof
         </div>
       </div>
 
-      {/* Settings Modal - Place it at the root level instead of inside the popup */}
+      
       
     </>
   )

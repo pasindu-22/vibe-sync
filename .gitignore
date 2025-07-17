@@ -1,5 +1,6 @@
 # Backend
 backend/venv/
+efficientnet_music_genre_model.h5
 backend/__pycache__/
 backend/.env.local
 backend/vibe-sync-admin.json

@@ -46,7 +46,7 @@ export function AuthModal({ isOpen, onCloseAction, mode, onAuthenticatedAction }
               await updateUserProfile(name);
               console.log("Profile name updated successfully");
             }, 1000);
-          } catch (profileError: any) {
+          } catch (profileError: unknown) {
             console.error("Error updating profile:", profileError);
             // Still consider the signup successful even if profile update fails
           }
@@ -55,8 +55,9 @@ export function AuthModal({ isOpen, onCloseAction, mode, onAuthenticatedAction }
       onAuthenticatedAction()
       onCloseAction()
       toast.success(currentMode === "login" ? "Signed in successfully!" : "Account created successfully!")
-    } catch (error: any) {
-      toast.error(error.message || "Authentication failed")
+    } catch (error: unknown) {
+      const errorMessage = error instanceof Error ? error.message : "Authentication failed"
+      toast.error(errorMessage)
     } finally {
       setIsLoading(false)
     }
@@ -79,8 +80,9 @@ export function AuthModal({ isOpen, onCloseAction, mode, onAuthenticatedAction }
       onAuthenticatedAction()
       onCloseAction()
       toast.success("Signed in successfully!")
-    } catch (error: any) {
-      toast.error(error.message || "Authentication failed")
+    } catch (error: unknown) {
+      const errorMessage = error instanceof Error ? error.message : "Authentication failed"
+      toast.error(errorMessage)
     } finally {
       setIsLoading(false)
     }

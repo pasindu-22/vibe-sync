@@ -22,12 +22,9 @@ export function UserProfileForm({ onComplete }: UserProfileFormProps) {
     try {
       await updateUserProfile(displayName)
       toast.success("Profile updated successfully!")
-      // Call onComplete if provided
-      if (onComplete) {
-        onComplete()
-      }
-    } catch (error: any) {
-      toast.error(error.message || "Failed to update profile")
+    } catch (error: unknown) {
+      const errorMessage = error instanceof Error ? error.message : "Failed to update profile"
+      toast.error(errorMessage)
       console.error(error)
     } finally {
       setIsUpdating(false)

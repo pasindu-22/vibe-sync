@@ -1,7 +1,8 @@
 from dotenv import load_dotenv
 import os
 
-# Load .env file
+# Load .env.local file first (takes precedence), then .env
+load_dotenv(".env.local")
 load_dotenv()
 
 # Spotify Configuration

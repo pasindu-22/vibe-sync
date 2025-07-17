@@ -4,7 +4,7 @@ import { LogOut, Settings, User } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { useAuth } from "@/lib/firebase/auth-context"
 import { useRouter } from "next/navigation"
-import { useState } from "react"
+// Line removed as it is unused
 import { ProfileSettingsModal } from "@/components/profile/profile-settings-modal"
 
 interface ProfilePopupProps {

@@ -4,13 +4,16 @@ import { LogOut, Settings, User } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { useAuth } from "@/lib/firebase/auth-context"
 import { useRouter } from "next/navigation"
+// Line removed as it is unused
+import { ProfileSettingsModal } from "@/components/profile/profile-settings-modal"
 
 interface ProfilePopupProps {
   isExpanded: boolean
   onCloseAction: () => void
+  onOpenSettings?: () => void
 }
 
-export function ProfilePopup({ isExpanded, onCloseAction }: ProfilePopupProps) {
+export function ProfilePopup({ isExpanded, onCloseAction, onOpenSettings }: ProfilePopupProps) {
   const { user, logout } = useAuth()
   const router = useRouter()
   
@@ -27,8 +30,14 @@ export function ProfilePopup({ isExpanded, onCloseAction }: ProfilePopupProps) {
   }
   
   const handleSettingsClick = () => {
-    router.push("/profile")
-    onCloseAction()
+    // Use the parent's handler to open settings modal
+    if (onOpenSettings) {
+      onOpenSettings()
+    } else {
+      // Fallback to old behavior - redirect to profile page
+      router.push("/profile")
+      onCloseAction()
+    }
   }
   
   return (
@@ -88,6 +97,9 @@ export function ProfilePopup({ isExpanded, onCloseAction }: ProfilePopupProps) {
           </button>
         </div>
       </div>
+
+      
+      
     </>
   )
 }

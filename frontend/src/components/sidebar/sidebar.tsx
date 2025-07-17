@@ -6,6 +6,7 @@ import { PlaylistSection } from "./playlist-section"
 import { ProfilePopup } from "./profile-popup"
 import { useState } from "react"
 import { Button } from "@/components/ui/button"
+import { ProfileSettingsModal } from "@/components/profile/profile-settings-modal"
 
 interface SidebarProps {
   currentView: string
@@ -17,6 +18,7 @@ interface SidebarProps {
 export function Sidebar({ currentView, onViewChangeAction, isExpanded, onToggleExpandedAction }: SidebarProps) {
   const [showPlaylists, setShowPlaylists] = useState(false)
   const [showProfile, setShowProfile] = useState(false)
+  const [showSettingsModal, setShowSettingsModal] = useState(false)
 
   const mainItems = [
     { id: "home", icon: Home, label: "Home" },
@@ -103,10 +105,24 @@ export function Sidebar({ currentView, onViewChangeAction, isExpanded, onToggleE
       {isExpanded && (
         <div className="p-2 border-t border-white/10 relative">
           <SidebarItem icon={User} label="Profile" onClick={() => setShowProfile(!showProfile)} showLabel={isExpanded} />
-          {showProfile && <ProfilePopup isExpanded={isExpanded} onCloseAction={() => setShowProfile(false)} />}
+          {showProfile && (
+            <ProfilePopup 
+              isExpanded={isExpanded} 
+              onCloseAction={() => setShowProfile(false)}
+              onOpenSettings={() => {
+                setShowSettingsModal(true)
+                setShowProfile(false)
+              }} 
+            />
+          )}
         </div>
       )}
 
+      {/* Profile Settings Modal - Placed at the root level outside of any conditionals */}
+      <ProfileSettingsModal 
+        isOpen={showSettingsModal} 
+        onClose={() => setShowSettingsModal(false)} 
+      />
     </div>
   )
 }

@@ -9,7 +9,7 @@ from .config.settings import SESSION_SECRET
 from .auth.firebase_auth import get_current_user
 
 # Import routers
-from .routers import user
+from .routers import user, music_classification, health
 from .routers.spotify import songs, auth
 
 # Create FastAPI app
@@ -48,6 +48,8 @@ def read_root():
 
 # Include all routers
 app.include_router(user.router)
+app.include_router(music_classification.router)
+app.include_router(health.router)
 app.include_router(songs.router)
 app.include_router(auth.router)
 

@@ -1,27 +1,141 @@
 "use client"
 
-import { useState } from "react"
-import { Mic, Link, Upload, Sparkles, Music, Brain, Plus, RefreshCw, Library, Play, Trash } from "lucide-react"
+import { useState, useRef, useEffect } from "react"
+import { Mic, Upload, Sparkles, Music, Brain, Plus, RefreshCw, Library, Play, Trash, Square, AlertCircle, CheckCircle } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Track, AnalysisResults } from "@/types"
 import { mockTracks } from "@/data/mock/tracks"
+import { musicClassificationService } from "@/services/music-classification-service"
+import { ClassificationResult } from "@/types"
+import { useAudioRecorder } from "@/hooks/useAudioRecorder"
+import { useAuth } from "@/lib/firebase/auth-context"
 import Image from "next/image"
+import toast from "react-hot-toast"
 
 interface AIClassificationViewProps {
   onTrackSelectAction: (track: Track) => void
 }
 
 export function AIClassificationView({ onTrackSelectAction }: AIClassificationViewProps) {
-  const [isRecording, setIsRecording] = useState(false)
-  const [url, setUrl] = useState("")
+  const { user } = useAuth()
+  const fileInputRef = useRef<HTMLInputElement>(null)
+  
   const [isAnalyzing, setIsAnalyzing] = useState(false)
   const [results, setResults] = useState<AnalysisResults | null>(null)
+  const [backendResults, setBackendResults] = useState<ClassificationResult | null>(null)
   const [activeTab, setActiveTab] = useState("mic")
   const [suggestedTracks, setSuggestedTracks] = useState<Track[]>([])
   const [isGeneratingPlaylist, setIsGeneratingPlaylist] = useState(false)
   const [playlistName, setPlaylistName] = useState("")
+  const [uploadError, setUploadError] = useState<string | null>(null)
+  const [recordedAudioBlob, setRecordedAudioBlob] = useState<Blob | null>(null)
+
+  // Audio recorder hook
+  const {
+    isRecording,
+    isProcessing,
+    recordingTime,
+    audioLevel,
+    error: recordingError,
+    startRecording,
+    stopRecording,
+    canStopRecording,
+    clearError
+  } = useAudioRecorder({
+    onRecordingComplete: (audioBlob) => {
+      setRecordedAudioBlob(audioBlob)
+      toast.success('Recording completed! Click "Analyze" to classify.')
+    },
+    onRecordingError: (error) => {
+      toast.error(`Recording failed: ${error.message}`)
+    }
+  })
+
+  // Clear errors when user switches tabs
+  useEffect(() => {
+    setUploadError(null)
+    clearError()
+  }, [activeTab, clearError])
+
+  // Handle file upload
+  const handleFileUpload = async (file: File) => {
+    if (!user) {
+      toast.error('Please sign in to use this feature')
+      return
+    }
+
+    setUploadError(null)
+    setIsAnalyzing(true)
+
+    try {
+      const result = await musicClassificationService.classifyUploadedFile(file)
+      setBackendResults(result)
+      
+      // Convert backend results to frontend format
+      const analysisResults: AnalysisResults = {
+        genre: {
+          label: result.overall_prediction.predicted_genre,
+          confidence: result.overall_prediction.confidence
+        },
+        mood: {
+          label: getMoodFromGenre(result.overall_prediction.predicted_genre), // Helper function
+          confidence: 0.8 // Mock mood confidence
+        },
+        tempo: Math.floor(Math.random() * 60) + 100, // Mock tempo
+        energy: Math.random(), // Mock energy
+        valence: Math.random() // Mock valence
+      }
+      
+      setResults(analysisResults)
+      generateSuggestedPlaylist(analysisResults.genre.label, analysisResults.mood.label)
+      
+      toast.success(`Genre classified as: ${result.overall_prediction.predicted_genre} (${Math.round(result.overall_prediction.confidence * 100)}% confidence)`)
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Failed to classify audio'
+      setUploadError(errorMessage)
+      toast.error(errorMessage)
+    } finally {
+      setIsAnalyzing(false)
+    }
+  }
+
+  // Handle recorded audio analysis
+  const analyzeRecordedAudio = async () => {
+    if (!recordedAudioBlob || !user) {
+      toast.error('No recorded audio available or user not signed in')
+      return
+    }
+
+    const audioFile = musicClassificationService.createAudioFile(recordedAudioBlob, 'recorded-audio.wav')
+    await handleFileUpload(audioFile)
+  }
+
+  // Handle file input change
+  const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0]
+    if (file) {
+      handleFileUpload(file)
+    }
+  }
+
+  // Helper function to map genre to mood (since backend only returns genre)
+  const getMoodFromGenre = (genre: string): string => {
+    const genreToMoodMap: Record<string, string> = {
+      'rock': 'energetic',
+      'pop': 'happy',
+      'jazz': 'relaxed',
+      'classical': 'calm',
+      'electronic': 'energetic',
+      'hip-hop': 'confident',
+      'country': 'nostalgic',
+      'blues': 'melancholic',
+      'reggae': 'chill',
+      'metal': 'intense'
+    }
+    return genreToMoodMap[genre.toLowerCase()] || 'neutral'
+  }
 
   // Generate suggested tracks based on analysis results
   const generateSuggestedPlaylist = (genre: string, mood: string) => {
@@ -91,38 +205,29 @@ export function AIClassificationView({ onTrackSelectAction }: AIClassificationVi
     alert(`Playlist "${playlistName}" added to your library!`)
   }
 
-  const handleMicRecord = () => {
-    setIsRecording(!isRecording)
-    if (!isRecording) {
-      setTimeout(() => {
-        setIsRecording(false)
-        simulateAnalysis()
-      }, 3000)
+  const handleMicRecord = async () => {
+  console.log('handleMicRecord called');
+  console.log('isRecording:', isRecording);
+  console.log('canStopRecording():', canStopRecording());
+  console.log('isProcessing:', isProcessing);
+  
+  if (isRecording) {
+    // Check if minimum recording time has been met
+    if (!canStopRecording()) {
+      toast.error('Please record for at least 30 seconds before stopping')
+      return
     }
-  }
-
-  const handleUrlSubmit = () => {
-    if (url.trim()) {
-      simulateAnalysis()
+    console.log('Calling stopRecording...');
+    stopRecording()
+  } else {
+    if (!user) {
+      toast.error('Please sign in to use this feature')
+      return
     }
+    console.log('Calling startRecording...');
+    await startRecording()
   }
-
-  const simulateAnalysis = () => {
-    setIsAnalyzing(true)
-    setTimeout(() => {
-      setIsAnalyzing(false)
-      const analysisResults = {
-        genre: { label: "Rock", confidence: 0.92 },
-        mood: { label: "Energetic", confidence: 0.87 },
-        tempo: 120,
-        energy: 0.85,
-        valence: 0.73,
-      }
-      setResults(analysisResults)
-      // Generate suggested playlist based on analysis
-      generateSuggestedPlaylist(analysisResults.genre.label, analysisResults.mood.label)
-    }, 2000)
-  }
+}
 
   return (
     <div className="p-6 space-y-8">
@@ -148,14 +253,10 @@ export function AIClassificationView({ onTrackSelectAction }: AIClassificationVi
             <h2 className="text-xl font-semibold mb-4">Analyze Music</h2>
 
             <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-              <TabsList className="grid w-full grid-cols-3 bg-white/10">
+              <TabsList className="grid w-full grid-cols-2 bg-white/10">
                 <TabsTrigger value="mic" className="data-[state=active]:bg-white/20">
                   <Mic className="w-4 h-4 mr-2" />
                   Mic
-                </TabsTrigger>
-                <TabsTrigger value="url" className="data-[state=active]:bg-white/20">
-                  <Link className="w-4 h-4 mr-2" />
-                  URL
                 </TabsTrigger>
                 <TabsTrigger value="upload" className="data-[state=active]:bg-white/20">
                   <Upload className="w-4 h-4 mr-2" />
@@ -163,62 +264,190 @@ export function AIClassificationView({ onTrackSelectAction }: AIClassificationVi
                 </TabsTrigger>
               </TabsList>
 
-              <TabsContent value="mic" className="space-y-6 mt-6">
-                <div className="text-center space-y-4">
+                <TabsContent value="mic" className="space-y-6 mt-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  {/* Recording Button Column */}
+                  <div className="text-center space-y-4">
                   <div className="relative">
                     <button
                       onClick={handleMicRecord}
-                      className={`w-24 h-24 rounded-full flex items-center justify-center transition-all duration-300 ${isRecording
-                          ? "bg-red-500 animate-pulse"
-                          : "bg-gradient-to-r from-purple-500 to-pink-500 hover:scale-105"
-                        }`}
+                      disabled={isProcessing || (isRecording && !canStopRecording())}
+                      className={`w-24 h-24 rounded-full flex items-center justify-center transition-all duration-300 disabled:opacity-50 ${
+                        isRecording
+                          ? canStopRecording()
+                            ? "bg-red-500 hover:bg-red-600 hover:cursor-pointer"
+                            : "bg-red-500/70 cursor-not-allowed"
+                          : "bg-gradient-to-r from-purple-500 to-pink-500 hover:scale-105 hover:from-purple-600 hover:to-pink-600 cursor-pointer"
+                      }`}
                     >
-                      <Mic className="w-8 h-8" />
+                      {isRecording ? <Square className="w-8 h-8" /> : <Mic className="w-8 h-8" />}
                     </button>
                     {isRecording && (
-                      <div className="absolute inset-0 rounded-full border-4 border-red-500 animate-ping" />
+                    <div className="absolute inset-0 rounded-full border-2 border-red-400 animate-ping opacity-75" />
                     )}
                   </div>
                   <div>
-                    <p className="text-lg font-medium">{isRecording ? "Recording..." : "Tap to record"}</p>
+                    <p className="text-lg font-medium">
+                      {isProcessing ? "Processing..." : isRecording ? "Recording..." : "Tap to record"}
+                    </p>
                     <p className="text-sm text-white/60">
-                      {isRecording ? "Listening to your music" : "Record up to 30 seconds"}
+                      {isRecording 
+                        ? canStopRecording() 
+                          ? `Recording for ${recordingTime}s - Click to stop` 
+                          : `Recording for ${recordingTime}s - Minimum 30s required`
+                        : "Record your audio (minimum 30 seconds)"
+                      }
                     </p>
                   </div>
-                </div>
-              </TabsContent>
+                  
+                  {/* Show analyze button if we have recorded audio */}
+                  {recordedAudioBlob && !isRecording && (
+                    <Button
+                      onClick={analyzeRecordedAudio}
+                      disabled={isAnalyzing}
+                      className="bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-600 hover:to-emerald-600"
+                    >
+                      {isAnalyzing ? (
+                        <>
+                          <Brain className="w-4 h-4 mr-2 animate-spin" />
+                          Analyzing...
+                        </>
+                      ) : (
+                        <>
+                          <Brain className="w-4 h-4 mr-2" />
+                          Analyze Recording
+                        </>
+                      )}
+                    </Button>
+                  )}
+                  </div>
 
-              <TabsContent value="url" className="space-y-6 mt-6">
-                <div className="space-y-4">
-                  <div>
-                    <label className="text-sm font-medium text-white/80 mb-2 block">Music URL</label>
-                    <div className="flex gap-2">
-                      <Input
-                        placeholder="https://example.com/song.mp3"
-                        value={url}
-                        onChange={(e) => setUrl(e.target.value)}
-                        className="bg-white/10 border-white/20 text-white placeholder:text-white/40"
-                      />
-                      <Button
-                        onClick={handleUrlSubmit}
-                        className="bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600"
-                      >
-                        Analyze
-                      </Button>
+                  {/* Recording Progress Column */}
+                  <div className="space-y-4">
+                  <div className="space-y-2">
+                    <div className="flex items-center justify-between">
+                    <span className="text-sm font-medium">Recording Progress</span>
+                    <span className="text-sm text-white/60">
+                      {recordingTime}s / 30s minimum
+                    </span>
+                    </div>
+                    <div className="h-3 bg-white/10 rounded-full overflow-hidden">
+                    <div 
+                      className={`h-full rounded-full transition-all duration-100 ${
+                        canStopRecording() 
+                          ? 'bg-gradient-to-r from-green-500 to-green-600' 
+                          : 'bg-gradient-to-r from-red-500 to-red-600'
+                      }`}
+                      style={{ 
+                        width: isRecording ? `${Math.min((recordingTime / 30) * 100, 100)}%` : '0%'
+                      }}
+                    />
                     </div>
                   </div>
-                  <p className="text-xs text-white/60">Supported formats: MP3, WAV, FLAC, M4A</p>
+                  
+                  {/* Recording Visualization */}
+                  <div className="space-y-2">
+                    <span className="text-sm font-medium">Audio Level</span>
+                    <div className="flex items-center gap-1 h-8">
+                    {Array.from({ length: 20 }).map((_, i) => (
+                      <div
+                      key={i}
+                      className={`w-1 bg-gradient-to-t from-purple-500 to-pink-500 rounded-full transition-all duration-150 ${
+                        isRecording ? 'opacity-100' : 'opacity-30'
+                      }`}
+                      style={{
+                        height: isRecording ? `${Math.min((audioLevel * 100) + Math.random() * 30, 100)}%` : '20%',
+                        transform: isRecording ? 'scaleY(1)' : 'scaleY(0.5)'
+                      }}
+                      />
+                    ))}
+                    </div>
+                  </div>
+
+                  {/* Show recording status */}
+                  {isRecording && recordingTime < 30 && (
+                    <div className="flex items-center gap-2 text-yellow-400">
+                      <AlertCircle className="w-4 h-4" />
+                      <span className="text-sm">Recording... {30 - recordingTime}s remaining to reach minimum</span>
+                    </div>
+                  )}
+
+                  {isRecording && canStopRecording() && (
+                    <div className="flex items-center gap-2 text-green-400">
+                      <CheckCircle className="w-4 h-4" />
+                      <span className="text-sm">Minimum recording time reached - you can stop now</span>
+                    </div>
+                  )}
+
+                  {recordedAudioBlob && !isRecording && (
+                    <div className="flex items-center gap-2 text-green-400">
+                      <CheckCircle className="w-4 h-4" />
+                      <span className="text-sm">Recording ready for analysis</span>
+                    </div>
+                  )}
+
+                  {/* Show recording error */}
+                  {recordingError && (
+                    <div className="flex items-center gap-2 text-red-400">
+                      <AlertCircle className="w-4 h-4" />
+                      <span className="text-sm">{recordingError}</span>
+                    </div>
+                  )}
+                  </div>
                 </div>
-              </TabsContent>
+                </TabsContent>
 
               <TabsContent value="upload" className="space-y-6 mt-6">
-                <div className="border-2 border-dashed border-white/20 rounded-lg p-8 text-center hover:border-white/40 transition-colors cursor-pointer">
+                <div 
+                  className="border-2 border-dashed border-white/20 rounded-lg p-8 text-center hover:border-white/40 transition-colors cursor-pointer"
+                  onClick={() => fileInputRef.current?.click()}
+                  onDrop={(e) => {
+                    e.preventDefault()
+                    const file = e.dataTransfer.files[0]
+                    if (file) handleFileUpload(file)
+                  }}
+                  onDragOver={(e) => e.preventDefault()}
+                  onDragEnter={(e) => e.preventDefault()}
+                >
                   <Upload className="w-12 h-12 mx-auto mb-4 text-white/60" />
                   <p className="text-lg font-medium mb-2">Drop your music file here</p>
                   <p className="text-sm text-white/60 mb-4">or click to browse</p>
-                  <Button className="bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600">
-                    Choose File
+                  <Button 
+                    className="bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600"
+                    disabled={isAnalyzing}
+                  >
+                    {isAnalyzing ? (
+                      <>
+                        <Brain className="w-4 h-4 mr-2 animate-spin" />
+                        Analyzing...
+                      </>
+                    ) : (
+                      'Choose File'
+                    )}
                   </Button>
+                  
+                  {/* Hidden file input */}
+                  <input
+                    ref={fileInputRef}
+                    type="file"
+                    accept="audio/*,.mp3,.wav,.flac,.m4a,.ogg"
+                    onChange={handleFileChange}
+                    className="hidden"
+                  />
+                </div>
+
+                {/* Show upload error */}
+                {uploadError && (
+                  <div className="flex items-center gap-2 text-red-400 bg-red-500/10 p-3 rounded-lg">
+                    <AlertCircle className="w-4 h-4" />
+                    <span className="text-sm">{uploadError}</span>
+                  </div>
+                )}
+
+                {/* Show supported formats info */}
+                <div className="text-center text-sm text-white/60">
+                  <p>Supported formats: MP3, WAV, FLAC, M4A, OGG</p>
+                  <p>Maximum file size: 100MB</p>
                 </div>
               </TabsContent>
             </Tabs>
@@ -228,12 +457,12 @@ export function AIClassificationView({ onTrackSelectAction }: AIClassificationVi
           {isAnalyzing && (
             <div className="bg-white/5 backdrop-blur-sm rounded-xl p-6 border border-white/10">
               <div className="flex items-center gap-3 mb-4">
-                <Brain className="w-5 h-5 animate-pulse text-purple-400" />
+                <Brain className="w-5 h-5 text-purple-400" />
                 <span className="font-medium">Analyzing with AI...</span>
               </div>
               <div className="space-y-2">
                 <div className="h-2 bg-white/10 rounded-full overflow-hidden">
-                  <div className="h-full bg-gradient-to-r from-purple-500 to-pink-500 rounded-full animate-pulse w-3/4" />
+                  <div className="h-full bg-gradient-to-r from-purple-500 to-pink-500 rounded-full w-3/4" />
                 </div>
                 <p className="text-sm text-white/60">Processing audio features...</p>
               </div>
@@ -265,6 +494,82 @@ export function AIClassificationView({ onTrackSelectAction }: AIClassificationVi
                   </div>
                 </div>
               </div>
+
+              {/* Show additional backend results if available */}
+              {backendResults && (
+                <div className="pt-4 border-t border-white/10">
+                  <h4 className="font-medium text-blue-300 mb-3">Detailed Classification</h4>
+                  <div className="grid grid-cols-2 gap-4 text-sm">
+                    <div>
+                      <p className="text-white/60">File Size</p>
+                      <p className="text-white">{(backendResults.file_info.file_size / (1024 * 1024)).toFixed(2)} MB</p>
+                    </div>
+                    <div>
+                      <p className="text-white/60">Duration</p>
+                      <p className="text-white">{backendResults.track_info.duration.toFixed(1)}s</p>
+                    </div>
+                    <div>
+                      <p className="text-white/60">Segments Analyzed</p>
+                      <p className="text-white">{backendResults.track_info.num_segments_analyzed}</p>
+                    </div>
+                    <div>
+                      <p className="text-white/60">Segment Duration</p>
+                      <p className="text-white">{backendResults.track_info.segment_duration}s each</p>
+                    </div>
+                  </div>
+                  
+                  {/* Show top 3 predictions from overall genre distribution */}
+                  <div className="mt-4">
+                    <p className="text-white/60 text-sm mb-2">Genre Distribution:</p>
+                    <div className="space-y-1">
+                      {Object.entries(backendResults.overall_prediction.genre_distribution)
+                        .sort(([,a], [,b]) => b - a)
+                        .slice(0, 3)
+                        .map(([genre, confidence]) => (
+                          <div key={genre} className="flex justify-between text-sm">
+                            <span className="text-white/80 capitalize">{genre}</span>
+                            <span className="text-white/60">{Math.round(confidence * 100)}%</span>
+                          </div>
+                        ))}
+                    </div>
+                  </div>
+
+                  {/* Show segment analysis summary */}
+                  <div className="mt-4">
+                    <p className="text-white/60 text-sm mb-2">Segment Analysis:</p>
+                    <div className="space-y-2">
+                      {backendResults.segment_predictions.map((segment, index) => (
+                        <div key={index} className="flex justify-between items-center text-xs bg-white/5 p-2 rounded">
+                          <span className="text-white/70">
+                            Segment {index + 1} ({segment.start_time}s-{segment.start_time + segment.duration}s)
+                          </span>
+                          <div className="flex gap-2">
+                            <span className="text-purple-300 capitalize">{segment.predicted_genre}</span>
+                            <span className="text-white/60">{Math.round(segment.confidence * 100)}%</span>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Show genre votes summary */}
+                  <div className="mt-4">
+                    <p className="text-white/60 text-sm mb-2">Consensus Votes:</p>
+                    <div className="flex flex-wrap gap-2">
+                      {Object.entries(backendResults.genre_votes)
+                        .filter(([, votes]) => votes > 0)
+                        .map(([genre, votes]) => (
+                          <span 
+                            key={genre} 
+                            className="px-2 py-1 bg-green-500/20 text-green-300 text-xs rounded-full"
+                          >
+                            {genre}: {votes} votes
+                          </span>
+                        ))}
+                    </div>
+                  </div>
+                </div>
+              )}
 
               <div className="grid grid-cols-3 gap-4 pt-4 border-t border-white/10">
                 <div className="text-center">
@@ -330,7 +635,7 @@ export function AIClassificationView({ onTrackSelectAction }: AIClassificationVi
               {isGeneratingPlaylist ? (
                 <div className="flex items-center justify-center py-8">
                   <div className="flex items-center gap-3">
-                    <Brain className="w-5 h-5 animate-pulse text-purple-400" />
+                    <Brain className="w-5 h-5 text-purple-400" />
                     <span className="text-white/60">Generating playlist...</span>
                   </div>
                 </div>

@@ -104,7 +104,7 @@ def get_songs_by_genre(request: Request, genre: str):
 
 @router.get("/classify")
 def classify_music(track_url: str):
-    # This is a placeholder. In the future, you'd integrate audio classification logic here
+    # This is a placeholder that returns mock data
     return {"track": track_url, "genre": "Pop", "mood": "Happy"}
 
 @router.get("/available-genres")

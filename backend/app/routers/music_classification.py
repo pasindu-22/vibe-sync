@@ -134,59 +134,6 @@ async def classify_uploaded_track(
         logger.error(f"Error classifying uploaded track: {str(e)}")
         raise HTTPException(status_code=500, detail="Internal server error during classification")
 
-@router.post("/url")
-async def classify_from_url(
-    url: str = Form(...),
-    segment_duration: Optional[int] = 30,
-    user_info: dict = Depends(get_current_user)
-) -> Dict[str, Any]:
-    """
-    Classify genre of music from a URL (YouTube, etc.).
-    
-    Downloads the audio from the provided URL and classifies it.
-    Supports YouTube, SoundCloud, and other platforms supported by yt-dlp.
-    
-    Args:
-        url: URL to the music video/audio
-        segment_duration: Duration of each segment in seconds (default: 30)
-        user_info: Current user information from Firebase auth
-        
-    Returns:
-        Classification results including overall prediction and source info
-    """
-    try:
-        # Initialize classifier
-        music_classifier = get_classifier()
-        
-        # Validate URL
-        if not url or not url.startswith(('http://', 'https://')):
-            raise HTTPException(status_code=400, detail="Please provide a valid URL")
-        
-        # Validate segment duration
-        if segment_duration <= 0 or segment_duration > 300:
-            raise HTTPException(
-                status_code=400, 
-                detail="Segment duration must be between 1 and 300 seconds"
-            )
-        
-        # Classify from URL
-        result = music_classifier.classify_from_url(url)
-        
-        # Add user metadata
-        result['user_info'] = {
-            'user_id': user_info.get('uid'),
-            'classification_timestamp': None  # You can add timestamp here
-        }
-        
-        logger.info(f"Successfully classified URL {url} for user {user_info.get('uid')}")
-        return result
-        
-    except HTTPException:
-        raise
-    except Exception as e:
-        logger.error(f"Error classifying from URL: {str(e)}")
-        raise HTTPException(status_code=500, detail=f"Failed to download or classify audio from URL: {str(e)}")
-
 @router.get("/supported-formats")
 async def get_supported_formats() -> Dict[str, Any]:
     """
@@ -203,7 +150,7 @@ async def get_supported_formats() -> Dict[str, Any]:
             "max_file_size": "100MB",  # You can configure this
             "max_segment_duration": 300,
             "default_segment_duration": 30,
-            "note": "Larger files will take longer to process. URL classification supports YouTube and other major platforms."
+            "note": "Larger files will take longer to process."
         }
         
     except Exception as e:

@@ -30,10 +30,6 @@ EXPECTED_GENRES = [
     'jazz', 'metal', 'pop', 'reggae', 'rock'
 ]
 
-# Download settings for URL classification
-DOWNLOAD_TIMEOUT = 300  # seconds
-MAX_DOWNLOAD_SIZE = 500 * 1024 * 1024  # 500 MB
-
 # Logging settings
 LOG_LEVEL = "INFO"
 LOG_FORMAT = "%(asctime)s - %(name)s - %(levelname)s - %(message)s"

@@ -1,11 +1,10 @@
 # Music Genre Classification API
 
-This module provides music genre classification functionality using a trained EfficientNetB0 model. The API can classify music from uploaded files or URLs (YouTube, etc.).
+This module provides music genre classification functionality using a trained EfficientNetB0 model. The API can classify music from uploaded audio files.
 
 ## Features
 
 - **File Upload Classification**: Upload audio files and get genre predictions
-- **URL Classification**: Classify music directly from YouTube and other supported platforms
 - **Segment Analysis**: Analyze specific segments of audio files
 - **Multi-segment Analysis**: Divide long tracks into segments for comprehensive analysis
 - **Confidence Scoring**: Get confidence scores for each prediction
@@ -70,33 +69,7 @@ Upload an audio file for genre classification.
 }
 ```
 
-### 2. Classify from URL
-```
-POST /api/music/classify/url
-```
-
-Classify music from a URL (YouTube, etc.).
-
-**Form Data:**
-- `url`: URL to the music (required)
-- `segment_duration`: Duration of each segment in seconds (optional, default: 30)
-
-**Response:**
-```json
-{
-  "overall_prediction": {...},
-  "track_info": {...},
-  "segment_predictions": [...],
-  "source_info": {
-    "title": "Song Title",
-    "uploader": "Artist Name",
-    "duration": 210,
-    "url": "https://youtube.com/..."
-  }
-}
-```
-
-### 3. Classify Audio Segment
+### 2. Classify Audio Segment
 ```
 POST /api/music/classify/segment
 ```
@@ -108,21 +81,21 @@ Classify a specific segment of an audio file.
 - `start_time`: Start time in seconds (required)
 - `duration`: Duration in seconds (required)
 
-### 4. Get Supported Formats
+### 3. Get Supported Formats
 ```
 GET /api/music/classify/supported-formats
 ```
 
 Get information about supported audio formats.
 
-### 5. Get Available Genres
+### 4. Get Available Genres
 ```
 GET /api/music/classify/genres
 ```
 
 Get list of genres that can be classified.
 
-### 6. Health Check
+### 5. Health Check
 ```
 GET /api/health/classification
 ```
@@ -172,13 +145,6 @@ with open('song.mp3', 'rb') as f:
     )
     result = response.json()
     print(f"Predicted genre: {result['overall_prediction']['predicted_genre']}")
-
-# Classify from URL
-response = requests.post(
-    'http://localhost:8000/api/music/classify/url',
-    data={'url': 'https://youtube.com/watch?v=...'},
-    headers={'Authorization': 'Bearer <your_token>'}
-)
 ```
 
 ### JavaScript/Frontend Example
@@ -212,12 +178,7 @@ console.log('Predicted genre:', result.overall_prediction.predicted_genre);
 - Each segment is classified independently
 - Final prediction uses majority voting across all segments
 
-### 3. URL Processing
-- Uses yt-dlp to download audio from URLs
-- Supports YouTube, SoundCloud, and other platforms
-- Downloaded audio is temporarily stored and then classified
-
-### 4. Model Architecture
+### 3. Model Architecture
 - Base: EfficientNetB0 (pretrained on ImageNet)
 - Custom classifier on top for genre prediction
 - Trained on GTZAN dataset
@@ -244,7 +205,6 @@ backend/app/
 ## Performance Notes
 
 - **File Upload**: Faster processing, files stored temporarily
-- **URL Classification**: Slower due to download time, supports many platforms
 - **Segment Duration**: Shorter segments = faster processing, longer segments = potentially more accurate
 - **File Size**: Larger files take longer to process
 
@@ -255,7 +215,6 @@ The API provides detailed error messages for:
 - Authentication issues
 - Model loading problems
 - File processing errors
-- URL download failures
 
 ## Limitations
 

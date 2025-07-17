@@ -1,7 +1,7 @@
 
 # Music Genre and Mood Classifier
 
-This project is a web application that allows users to upload or link music tracks, uses deep learning models to classify the genre and mood of the music, and generates personalized playlists based on these classifications and user preferences. It consists of a **FastAPI** backend and a **Next.js** frontend.
+This project is a web application that allows users to upload music tracks, uses deep learning models to classify the genre and mood of the music, and generates personalized playlists based on these classifications and user preferences. It consists of a **FastAPI** backend and a **Next.js** frontend.
 
 ## Project Structure
 

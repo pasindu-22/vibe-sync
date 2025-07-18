@@ -1,6 +1,5 @@
 "use client"
 
-import { useRef } from "react"
 import { TrackCard } from "../music/track-card"
 import { PlaylistCard } from "../music/playlist-card"
 import { Track } from "@/types"
@@ -15,7 +14,6 @@ interface HomeViewProps {
 }
 
 export function HomeView({ currentTrack, onViewChangeAction, onTrackSelectAction }: HomeViewProps) {
-  const audioRef = useRef<HTMLAudioElement | null>(null)
 
   const fetchAndPlayTrack = async (track: Track) => {
     try {

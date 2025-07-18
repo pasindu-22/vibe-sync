@@ -14,6 +14,7 @@ import {
 } from 'firebase/auth';
 import { auth } from './firebase';
 import { updateUserProfile as updateBackendProfile } from '@/services/user-service';
+import { apiClient } from '@/lib/api-client';
 
 type AuthProviderProps = {
   children: React.ReactNode;
@@ -87,32 +88,18 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
     
     // Optional: Send the updated profile to your backend
     // This would require a backend endpoint to handle profile updates
-    try {
-      const token = await auth.currentUser.getIdToken();
-      await fetch('/api/proxy/user', {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-          displayName: auth.currentUser.displayName,
-          photoURL: auth.currentUser.photoURL
-        })
-      });
-    } catch (error) {
-      console.error('Failed to sync profile with backend:', error);
-      // Don't throw here - we still want the Firebase profile update to succeed
-    }
+    // Removed redundant API call as we're using the apiClient below
+    // This prevents making duplicate calls to update the profile
 
-    // Update profile in backend service
+    // Update profile in backend service using the API client
     try {
-      await updateBackendProfile({
+      await apiClient.post('/api/proxy/user', {
         displayName: displayName ?? auth.currentUser.displayName,
         photoURL: photoURL ?? auth.currentUser.photoURL
       });
     } catch (error) {
       console.error('Failed to update profile in backend service:', error);
+      // If error is due to token expiration, it's already handled by the API client
     }
   };
 
@@ -134,12 +121,26 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
   };
 
   useEffect(() => {
+    // Listen for auth state changes
     const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
       setUser(currentUser);
       setLoading(false);
     });
 
-    return () => unsubscribe();
+    // Listen for token expiration events
+    const handleTokenExpired = () => {
+      console.log('Token expired, logging out user');
+      logout().catch(error => console.error('Error during auto-logout:', error));
+    };
+
+    // Add event listener for token expiration
+    window.addEventListener('auth:tokenExpired', handleTokenExpired);
+    
+    // Cleanup
+    return () => {
+      unsubscribe();
+      window.removeEventListener('auth:tokenExpired', handleTokenExpired);
+    };
   }, []);
 
   const value = {

@@ -24,11 +24,11 @@ export function MainContent({ currentView, currentTrack, onViewChangeAction, onT
       case "library":
         return <LibraryView onTrackSelectAction={onTrackSelectAction} onViewChangeAction={onViewChangeAction} />
       case "liked":
-        return <LikedSongsView onTrackSelect={onTrackSelectAction} />
+        return <LikedSongsView onTrackSelectAction={onTrackSelectAction} />
       case "recent":
-        return <RecentlyPlayedView onTrackSelect={onTrackSelectAction} />
+        return <RecentlyPlayedView onTrackSelectAction={onTrackSelectAction} />
       case "ai-classification":
-        return <AIClassificationView onTrackSelect={onTrackSelectAction} />
+        return <AIClassificationView onTrackSelectAction={onTrackSelectAction} />
       default:
         // Check if it's a playlist view (starts with "playlist-")
         if (currentView.startsWith("playlist-")) {

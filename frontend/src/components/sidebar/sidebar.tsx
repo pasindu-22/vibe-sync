@@ -6,6 +6,7 @@ import { PlaylistSection } from "./playlist-section"
 import { ProfilePopup } from "./profile-popup"
 import { useState } from "react"
 import { Button } from "@/components/ui/button"
+import { ProfileSettingsModal } from "@/components/profile/profile-settings-modal"
 
 interface SidebarProps {
   currentView: string
@@ -17,6 +18,7 @@ interface SidebarProps {
 export function Sidebar({ currentView, onViewChangeAction, isExpanded, onToggleExpandedAction }: SidebarProps) {
   const [showPlaylists, setShowPlaylists] = useState(false)
   const [showProfile, setShowProfile] = useState(false)
+  const [showSettingsModal, setShowSettingsModal] = useState(false)
 
   const mainItems = [
     { id: "home", icon: Home, label: "Home" },
@@ -42,9 +44,14 @@ export function Sidebar({ currentView, onViewChangeAction, isExpanded, onToggleE
       {/* Header with Logo and Collapse Button */}
       <div className="p-4 border-b border-white/10 flex items-center justify-between">
         <div className="flex items-center gap-3">
-          <div className="w-8 h-8 bg-gradient-to-r from-purple-500 to-pink-500 rounded-lg flex items-center justify-center">
-            <Music className="w-5 h-5" />
-          </div>
+            <div
+            className="w-8 h-8 bg-gradient-to-r from-purple-500 to-pink-500 rounded-lg flex items-center justify-center cursor-pointer group transition-transform duration-300 hover:scale-110 active:scale-95"
+            onClick={() => onToggleExpandedAction(!isExpanded)}
+            >
+            <Music
+              className="w-5 h-5 text-white transition-transform duration-500 group-hover:rotate-12 group-active:scale-110"
+            />
+            </div>
           {isExpanded && <span className="font-bold text-xl">VibeSync</span>}
         </div>
 
@@ -98,10 +105,24 @@ export function Sidebar({ currentView, onViewChangeAction, isExpanded, onToggleE
       {isExpanded && (
         <div className="p-2 border-t border-white/10 relative">
           <SidebarItem icon={User} label="Profile" onClick={() => setShowProfile(!showProfile)} showLabel={isExpanded} />
-          {showProfile && <ProfilePopup isExpanded={isExpanded} onCloseAction={() => setShowProfile(false)} />}
+          {showProfile && (
+            <ProfilePopup 
+              isExpanded={isExpanded} 
+              onCloseAction={() => setShowProfile(false)}
+              onOpenSettings={() => {
+                setShowSettingsModal(true)
+                setShowProfile(false)
+              }} 
+            />
+          )}
         </div>
       )}
 
+      {/* Profile Settings Modal - Placed at the root level outside of any conditionals */}
+      <ProfileSettingsModal 
+        isOpen={showSettingsModal} 
+        onClose={() => setShowSettingsModal(false)} 
+      />
     </div>
   )
 }

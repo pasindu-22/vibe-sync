@@ -265,6 +265,7 @@ export const likedTracks: Track[] = [
   mockTracks[6], // Watermelon Sugar
   mockTracks[9], // Perfect
   mockTracks[12], // Imagine
+  mockTracks[14], // Yesterday
 ];
 
 export const trendingTracks: Track[] = [
@@ -273,4 +274,5 @@ export const trendingTracks: Track[] = [
   mockTracks[7], // Bad Guy
   mockTracks[6], // Watermelon Sugar
   mockTracks[8], // Thunderstruck
+  mockTracks[10], // Rolling in the Deep
 ];

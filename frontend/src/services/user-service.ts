@@ -1,4 +1,5 @@
 import { auth } from "@/lib/firebase/firebase";
+import { apiClient, AuthError } from "@/lib/api-client";
 
 export interface UserProfile {
   uid: string;
@@ -14,23 +15,12 @@ export async function fetchUserProfile(): Promise<UserProfile | null> {
       return null;
     }
 
-    const token = await user.getIdToken();
-    
-    const response = await fetch('/api/proxy/user', {
-      method: 'GET',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${token}`
-      }
-    });
-
-    if (!response.ok) {
-      const errorData = await response.json();
-      throw new Error(errorData.error || 'Failed to fetch profile');
-    }
-
-    return await response.json();
+    return await apiClient.get<UserProfile>('/api/proxy/user');
   } catch (error) {
+    if (error instanceof AuthError) {
+      // Token expiration is already handled by the API client
+      return null;
+    }
     console.error('Error in fetchUserProfile:', error);
     throw error;
   }
@@ -43,24 +33,12 @@ export async function updateUserProfile(profileData: Partial<UserProfile>): Prom
       throw new Error('No authenticated user found');
     }
 
-    const token = await user.getIdToken();
-    
-    const response = await fetch('/api/proxy/user', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${token}`
-      },
-      body: JSON.stringify(profileData)
-    });
-
-    if (!response.ok) {
-      const errorData = await response.json();
-      throw new Error(errorData.error || 'Failed to update profile');
-    }
-
-    return await response.json();
+    return await apiClient.post<UserProfile>('/api/proxy/user', profileData);
   } catch (error) {
+    if (error instanceof AuthError) {
+      // Token expiration is already handled by the API client
+      throw new Error('Authentication failed. Please log in again.');
+    }
     console.error('Error in updateUserProfile:', error);
     throw error;
   }

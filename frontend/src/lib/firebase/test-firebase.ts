@@ -8,8 +8,12 @@ export async function testFirebaseAuth(email: string, password: string) {
     const userCredential = await signInWithEmailAndPassword(auth, email, password);
     console.log("Firebase auth is working:", userCredential.user);
     return userCredential.user;
-  } catch (error: any) {
-    console.error("Firebase auth error:", error.message);
+  } catch (error: unknown) {
+    if (error instanceof Error) {
+      console.error("Firebase auth error:", error.message);
+    } else {
+      console.error("Firebase auth error:", error);
+    }
     throw error;
   }
 }

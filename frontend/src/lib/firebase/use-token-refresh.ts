@@ -10,7 +10,7 @@ export function useTokenRefresh() {
   useEffect(() => {
     // Firebase tokens expire after 1 hour (3600 seconds)
     // We'll refresh the token every 45 minutes (2700 seconds)
-    const REFRESH_INTERVAL = 45 * 60 * 1000; // 45 minutes in milliseconds
+    const REFRESH_INTERVAL = Number(process.env.NEXT_PUBLIC_REFRESH_INTERVAL) || 45 * 60 * 1000; // Default to 45 minutes in milliseconds
     
     const refreshToken = async () => {
       if (auth.currentUser) {

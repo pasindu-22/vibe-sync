@@ -106,6 +106,6 @@ async def general_health_check() -> Dict[str, Any]:
         return {
             "status": "unhealthy",
             "timestamp": datetime.now().isoformat(),
-            "error": str(e),
+            "error": "An internal error has occurred.",
             "version": "1.0.0"
         }

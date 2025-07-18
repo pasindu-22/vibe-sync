@@ -15,9 +15,23 @@ except ValueError:
     firebase_cred = None
     
     service_account_path = os.environ.get("FIREBASE_SERVICE_ACCOUNT_PATH")
-    if service_account_path and os.path.exists(service_account_path):
-        cred = credentials.Certificate(service_account_path)
-        initialize_app(cred)
+    if service_account_path:
+        # Try relative to backend directory first
+        backend_dir = Path(__file__).parent.parent.parent
+        full_path = backend_dir / service_account_path
+        
+        # If relative path doesn't work, try absolute path
+        if not full_path.exists():
+            full_path = Path(service_account_path)
+        
+        if full_path.exists():
+            cred = credentials.Certificate(str(full_path))
+            initialize_app(cred)
+        else:
+            print(f"Warning: Firebase service account file not found at {service_account_path}")
+            print(f"Tried: {backend_dir / service_account_path} and {service_account_path}")
+    else:
+        print("Warning: FIREBASE_SERVICE_ACCOUNT_PATH environment variable not set")
 
 # Security scheme
 security = HTTPBearer()
